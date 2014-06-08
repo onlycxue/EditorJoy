@@ -25,8 +25,7 @@ void MainWindow::uiInit()
     timer->start();
     connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
 
-    _createDialog = new CreateFile(this);
-    _createDialog->show();
+
 
 }
 
@@ -43,6 +42,7 @@ void MainWindow::menubarInit()
 
     _createFile = new QAction("新建...",this);
     filemenu->addAction(_createFile);
+    connect(_createFile,SIGNAL(triggered()),this,SLOT(showCreateDialog()));
 
     _menus.append(filemenu);
 
@@ -140,6 +140,11 @@ void MainWindow::update()
     _posStatusBar->setText(str);
 
 
+}
+void MainWindow::showCreateDialog()
+{
+        _createDialog = new CreateFile(this);
+        _createDialog->show();
 }
 MainWindow::~MainWindow()
 {

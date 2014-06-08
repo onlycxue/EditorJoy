@@ -36,6 +36,7 @@ public:
     ~MainWindow();
 public slots:
      void update();
+     void showCreateDialog();
 private:
     QToolBar *_toolbar;
     QVector<QMenu*> _menus;
