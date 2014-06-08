@@ -1,0 +1,71 @@
+{
+    "blocks": [
+        {
+            "name": "animal",
+            "type": "1000",
+            "resource": "animal_cat.png"
+        },
+        {
+            "name": "number_0",
+            "resource": "number_0.png"
+        },
+        {
+            "name": "number_2",
+            "resource": "number_2.png"
+        },
+        {
+            "name": "popup_1",
+			"type": "18",
+            "resource": "popup_1.png"
+        },
+        {
+            "name": "popup_2",
+            "type": "6",
+            "resource": "popup_2.png"
+        },
+        {
+            "name": "popup_3",
+			"type": "13",
+            "resource": "popup_3.png"
+        },
+        {
+            "name": "popup_4",
+			"type": "999",
+            "resource": "popup_4.png"
+        },
+        {
+            "name": "popup_6",
+			"type": "9",
+            "resource": "popup_6.png"
+        },
+        {
+            "name": "popup_7",
+            "type": "0",
+            "resource": "popup_7.png"
+        },
+        {
+            "name": "popup_8",
+            "type": "17",
+            "resource": "popup_8.png"
+        },
+        {
+            "name": "popup_9",
+			"type": "23",
+            "resource": "popup_9.png"
+        },
+        {
+            "name": "popup_10",
+            "resource": "popup_10.png"
+        },
+        {
+            "name": "PRRuleCageBlock",
+            "type": "15",
+            "resource": "popup_11.png"
+        },
+        {
+            "name": "PRRuleFreezer",
+            "type": "25",
+            "resource": "popup_13.png"
+        }
+    ]
+}

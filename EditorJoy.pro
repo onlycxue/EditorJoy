@@ -12,29 +12,31 @@ TARGET = EditorJoy
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    editorwidget.cpp \
-    levelhandle.cpp \
-    blockswidget.cpp \
-    jsonhandle.cpp \
-    blocklabel.cpp \
-    ornamentalwidget.cpp \
-    blockbutton.cpp \
-    draglabel.cpp
-
-HEADERS  += mainwindow.h \
-    editorwidget.h \
-    levelhandle.h \
-    blockswidget.h \
-    jsonhandle.h \
-    globaldef.h \
-    blocklabel.h \
-    blockitem.h \
-    ornamentalwidget.h \
-    blockbutton.h \
-    draglabel.h
+SOURCES += \
+    Block/blockbutton.cpp \
+    Block/blocklabel.cpp \
+    Block/blockswidget.cpp \
+    EditorWidget/editorwidget.cpp \
+    JsonManage/jsonhandle.cpp \
+    OrnamentalWidget/draglabel.cpp \
+    OrnamentalWidget/ornamentalwidget.cpp \
+    Main/main.cpp \
+    Main/mainwindow.cpp \
+    DialogWidget/createdialogwidget.cpp
+HEADERS  += \
+    Block/blockbutton.h \
+    Block/blockitem.h \
+    Block/blocklabel.h \
+    Block/blockswidget.h \
+    EditorWidget/editorwidget.h \
+    Global/global.h \
+    Global/globaldef.h \
+    JsonManage/jsonhandle.h \
+    OrnamentalWidget/draglabel.h \
+    OrnamentalWidget/ornamentalwidget.h \
+    Main/mainwindow.h \
+    DialogWidget/createdialogwidget.h
 
 RESOURCES += \
-    images.qrc \
-    config.qrc
+    Resource/config.qrc \
+    Resource/images.qrc
