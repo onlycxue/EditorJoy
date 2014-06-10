@@ -10,6 +10,7 @@
 #include "../OrnamentalWidget/draglabel.h"
 #include <QListWidgetItem>
 #include "../Global/globaldef.h"
+#include <QActionGroup>
 
 #define BLOCK_WIDTH 70
 #define BLOCK_HEIGHT 70
@@ -24,17 +25,37 @@ public:
     EditorWidget(int row,int column);
     void setRow(int num);
     void setColumn(int num);
+    int getRow();
+    int getColumn();
+    QVector<BlockLabel*> getBlocks();
     void editWidgetInit();
     void blocksInit();
     float getMouseX();
     float getMouseY();
     void actionInit();
+    void setActionStatus();
+    void setColorActionStatus(int type);
+    void setBoxColorActionStatus(int type,bool flag);
+    void setForzenStatus(int level);
+    void setmultiplyStatus(int level);
+    void changeBlockResource(const char* file);
+    void exportBlocksMsg();
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     virtual void contextMenuEvent(QContextMenuEvent *event);
 public slots:
     void msgHandler(BlockItem* block);
     void addDragLabel(QListWidgetItem* item);
+    void setBlueBlock();
+    void setYellowBlock();
+    void setRedBlock();
+    void setGreenBlock();
+    void setPurpleBlock();
+    void setFrozen0();
+    void setFrozen1();
+    void setFrozen2();
+    void setmultiply();
+    void setNoBox();
 private:
     int _row;
     int _column;
@@ -50,15 +71,27 @@ private:
     QMenu *_mainMenu;
     QMenu *_colorMenu;
     QMenu *_frozenMenu;
+    QMenu *_boxedMenu;
+
     //二级菜单颜色
+
+    QActionGroup* _colorGroup;
     QAction *_blueColor;
     QAction *_yellowColor;
     QAction *_redColor;
     QAction *_pinkColor;
     QAction *_greenColor;
+
+
     //铁笼等级
+    QActionGroup* _frozenGroup;
+    QAction *_frozen0;
     QAction *_frozen1;
     QAction *_frozen2;
+
+    //boxed
+    QActionGroup* _boxedGroup;
+    QAction *_noBox;
 
     QAction *_multiplier;
     QAction *_addGroup;

@@ -3,8 +3,6 @@
         {
             "pillarName": "PRRulePetBlock",
             "type": 999,
-            "boxed": false,
-            "matchType": 0,
             "resource": "animal_cat.png"
         },
         {

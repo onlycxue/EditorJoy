@@ -18,7 +18,14 @@ BlockLabel::BlockLabel(QWidget *parent ):
     this->setMaximumSize(70,70);
     setStyleSheet("border-width: 1px; border-style: solid;border-color: rgb(255, 170, 0);");
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
-    propertyInit();
+     propertyInit();
+    _secondImgLabel = new QLabel(this);
+    _secondImgLabel->setMaximumSize(70,70);
+    _secondImgLabel->setMinimumSize(70,70);
+    _thirdImagLabel = new QLabel(this);
+    _thirdImagLabel->setMaximumSize(70,70);
+    _thirdImagLabel->setMinimumSize(70,70);
+
 }
 
 void BlockLabel::propertyInit()
@@ -31,8 +38,23 @@ void BlockLabel::propertyInit()
     _propertys->_matchType = -1;
     _propertys->_multiplier = -1;
     _propertys->_type = -1;
+    _propertys->_boxed = false;
     _propertys->_randomizedColor = -1;
     _propertys->_resource = "";
+
+}
+void BlockLabel::setProperty(BlockItem* item)
+{
+    _propertys->_pillar = item->_pillar;
+    _propertys->_pillarName = item->_pillarName;
+    _propertys->_frozen = item->_frozen;
+    _propertys->_frozenLevel = item->_frozenLevel;
+    _propertys->_matchType = item->_matchType;
+    _propertys->_multiplier = item->_multiplier;
+    _propertys->_type = item->_type;
+    _propertys->_randomizedColor = item->_randomizedColor;
+    _propertys->_boxed = item->_boxed;
+    _propertys->_resource = item->_resource;
 
 }
 void BlockLabel::setFocusColor(QColor color)
@@ -63,7 +85,21 @@ bool BlockLabel::isSelect()
 {
     return _isSelect;
 }
+void BlockLabel::setSecondImg(const char* fileName)
+{
+    QPixmap pixmap(fileName);
+    pixmap.scaled(70,70,Qt::KeepAspectRatio);
+    _secondImgLabel->setScaledContents(true);
+    _secondImgLabel->setPixmap(pixmap);
 
+}
+void BlockLabel::setThirdImg(const char* fileName)
+{
+    QPixmap pixmap(fileName);
+    pixmap.scaled(70,70,Qt::KeepAspectRatio);
+    _thirdImagLabel->setScaledContents(true);
+    _thirdImagLabel->setPixmap(pixmap);
+}
 
 
 

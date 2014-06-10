@@ -8,12 +8,25 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-
-class  CreateFile:public QDialog
+typedef struct
 {
+    int _rows;
+    int _columns;
+
+}DialogMsg;
+
+
+class CreateFile:public QDialog
+{
+    Q_OBJECT
+
 public:
      CreateFile(QWidget* parent = 0);
      void init();
+public slots:
+     void entryHandle();
+signals:
+     void sendMsg(DialogMsg*);
 private:
      QLabel* _rowLabel;
      QLabel* _columnLabel;

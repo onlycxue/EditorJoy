@@ -7,6 +7,7 @@ BlockButton::BlockButton(BlockItem *item,QWidget* parent):
     setIconSize(QSize(70,70));
     setIcon(QIcon(item->_resource));
     //this->setFlat(true);
+    //qDebug() << "#######blockButton#######" << _propertys->_type<< endl;
 }
 
 void BlockButton::mousePressEvent(QMouseEvent *event)

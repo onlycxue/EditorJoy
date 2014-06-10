@@ -22,6 +22,9 @@ public:
     void setSelect(bool flag);
     bool isSelect();
     BlockItem* getPropertys();
+    void setProperty(BlockItem* item);
+    void setSecondImg(const char* fileName);
+    void setThirdImg(const char* fileName);
     void propertyInit();
 protected:
 
@@ -30,6 +33,7 @@ private:
     QColor _focusColor;
     bool _isSelect;
     QLabel *_secondImgLabel;
+    QLabel *_thirdImagLabel;
 };
 
 #endif // BLOCKITEM_H

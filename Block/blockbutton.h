@@ -2,6 +2,7 @@
 #define BLOCKBUTTON_H
 #include <QPushButton>
 #include "blockitem.h"
+#include <QDebug>
 
 class BlockButton : public QPushButton
 {

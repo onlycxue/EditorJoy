@@ -17,15 +17,14 @@ void MainWindow::uiInit()
     ornametalWidgetInit();
     layoutInit();
     statusBarInit();
-    connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
+
     this->setUpdatesEnabled(true);
-    QTimer* timer = new QTimer();
-    timer->setInterval(50);
-    connect(timer,SIGNAL(timeout()),this,SLOT(update()));
-    timer->start();
-    connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
+    _timer = new QTimer();
+    _timer->setInterval(50);
+    connect(_timer,SIGNAL(timeout()),this,SLOT(update()));
 
-
+//    BlockItemArray _array = JsonHandle::getInstance()->parserRuleJson(RuleConfigPath);
+//    qDebug() << "_arraySize is " << _array.size() << endl;
 
 }
 
@@ -43,6 +42,10 @@ void MainWindow::menubarInit()
     _createFile = new QAction("新建...",this);
     filemenu->addAction(_createFile);
     connect(_createFile,SIGNAL(triggered()),this,SLOT(showCreateDialog()));
+    _exportFile = new QAction("导出...",this);
+    filemenu->addAction(_exportFile);
+    connect(_exportFile,SIGNAL(triggered()),this,SLOT(exportFileHandle()));
+
 
     _menus.append(filemenu);
 
@@ -74,15 +77,14 @@ void MainWindow::editorWidgetInit()
      _editorArea = new QScrollArea(this);
      _editorArea->setMaximumHeight(540);
      _editorArea->setAlignment(Qt::AlignCenter);
-     _editorWidget = new EditorWidget(4,4);
-     _editorArea->setWidget(_editorWidget);
+     _editorWidget = NULL;
+//     _editorWidget = new EditorWidget(4,4);
+//     _editorArea->setWidget(_editorWidget);
 
 
     //_editorWidget->setGeometry(300,50,600,600);
     //_editorWidget->setParent(this);
    // _editorArea->resize(600,600);
-
-
 }
 void MainWindow::blocksWidgetInit()
 {
@@ -144,7 +146,28 @@ void MainWindow::update()
 void MainWindow::showCreateDialog()
 {
         _createDialog = new CreateFile(this);
+        connect(_createDialog,SIGNAL(sendMsg(DialogMsg*)),
+                this,SLOT(createEditorWidget(DialogMsg*)));
         _createDialog->show();
+}
+
+void MainWindow::createEditorWidget(DialogMsg* msg)
+{
+    _editorWidget = new EditorWidget(msg->_rows,msg->_columns);
+    _editorArea->setWidget(_editorWidget);
+    connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
+    connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
+    delete msg;
+    _timer->start();
+}
+void MainWindow::exportFileHandle()
+{
+    if(_editorWidget != NULL)
+    {
+         _editorWidget->exportBlocksMsg();
+        JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),
+                                              _editorWidget->getRow(),_editorWidget->getColumn(),"");
+    }
 }
 MainWindow::~MainWindow()
 {

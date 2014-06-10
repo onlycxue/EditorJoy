@@ -14,8 +14,9 @@
 #include <QStatusBar>
 #include <QTimer>
 #include <QGroupBox>
-#include "Global/global.h"
-#include "DialogWidget/createdialogwidget.h"
+#include "../Global/global.h"
+#include "../DialogWidget/createdialogwidget.h"
+#include "../Block/blockitem.h"
 
 class MainWindow : public QMainWindow
 {
@@ -37,6 +38,8 @@ public:
 public slots:
      void update();
      void showCreateDialog();
+     void createEditorWidget(DialogMsg* msg);
+     void exportFileHandle();
 private:
     QToolBar *_toolbar;
     QVector<QMenu*> _menus;
@@ -52,7 +55,8 @@ private:
     QLabel *_statusBar;
     QLabel *_posStatusBar;
     QAction *_createFile;
-
+    QAction *_exportFile;
+    QTimer* _timer;
     CreateFile* _createDialog;
 
 };
