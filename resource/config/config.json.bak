@@ -3,6 +3,8 @@
         {
             "pillarName": "PRRulePetBlock",
             "type": 999,
+            "boxed": false,
+            "matchType": 0,
             "resource": "animal_cat.png"
         },
         {
@@ -43,7 +45,7 @@
         },
         {
             "pillarName": "PRRuleColorBombBlock",
-						"type": 9,
+						"type": 7,
 						"matchType": 0,
 						"colorbombmatchtype": 0,
             "resource": "popup_6.png"

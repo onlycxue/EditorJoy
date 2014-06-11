@@ -30,6 +30,7 @@ public:
         _matchType = 0;
         _frozen = false;
         _randomizedColor = false;
+        _colorbombmatchtype = 0;
         _boxed = false;
         _type = -1;
         _multiplier = 0;
@@ -44,6 +45,7 @@ public:
         qDebug()<<"matchType: " << _matchType ;
         qDebug()<<"frozen: " << _frozen;
         qDebug()<<"randomizedColor: " <<_randomizedColor ;
+        qDebug() << "colorbombmatchtype:" << _colorbombmatchtype;
         qDebug()<<"type: " << _type;
         qDebug()<<"multiplier: " << _multiplier;
         qDebug()<< "blockId: " << _blockId;

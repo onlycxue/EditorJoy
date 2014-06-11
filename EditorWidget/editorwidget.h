@@ -11,6 +11,7 @@
 #include <QListWidgetItem>
 #include "../Global/globaldef.h"
 #include <QActionGroup>
+#include "../JsonManage/jsonhandle.h"
 
 #define BLOCK_WIDTH 70
 #define BLOCK_HEIGHT 70
@@ -21,13 +22,21 @@ class EditorWidget : public QWidget
 {
     Q_OBJECT
 public:
-    EditorWidget();
+    enum Color{
+        BLUE,
+        YELLOW,
+        RED,
+        GREEN,
+        PURPLE
+    };
+    EditorWidget( QVector<BlockLabel*> blocks,QVector<DragLabel*> constraints,int row,int column);
     EditorWidget(int row,int column);
     void setRow(int num);
     void setColumn(int num);
     int getRow();
     int getColumn();
     QVector<BlockLabel*> getBlocks();
+    QVector<DragLabel*> getConstraints();
     void editWidgetInit();
     void blocksInit();
     float getMouseX();
@@ -40,6 +49,8 @@ public:
     void setmultiplyStatus(int level);
     void changeBlockResource(const char* file);
     void exportBlocksMsg();
+    void setBlocksStatus(BlockItem* item);
+    QString getResourceFromConfig(const char* configName,QString name);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     virtual void contextMenuEvent(QContextMenuEvent *event);
@@ -56,12 +67,16 @@ public slots:
     void setFrozen2();
     void setmultiply();
     void setNoBox();
+    void touchingLabel(DragLabel* label);
+    void touchingClean();
 private:
     int _row;
     int _column;
+    QWidget* _blocksBoard;
     //QWidget* _editWidget;
     QVector<BlockLabel*> _blocks;
     QVector<DragLabel*> _dragLabels;
+    DragLabel* _touchingLabel;
     int _selectedNum;
     QGridLayout* _gridLayout;
     float _mouseX;

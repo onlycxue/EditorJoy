@@ -577,6 +577,16 @@
          "type": 4,
          "matchType": 4,
          "frozenLevel": 2
+ }
+ , {
+         "blockId": 1069,
+         "pillar": "com.king.petrescue.game.pillar.rule.PRRuleCommonBlock",
+         "pillarName": "PRRuleCommonBlock",
+         "multiplier": 0,
+         "frozen": true,
+         "type": 4,
+         "matchType": 4,
+         "frozenLevel": 2
  },
  {
              "pillarName": "PRRuleInfectedBlock",

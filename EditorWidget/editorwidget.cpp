@@ -1,12 +1,13 @@
 #include "editorwidget.h"
 
-EditorWidget::EditorWidget()
+EditorWidget::EditorWidget( QVector<BlockLabel*> blocks,QVector<DragLabel*> constraints,int row,int column):
+    _dragLabels(constraints),_blocks(blocks)
 {
 
 
 }
 EditorWidget::EditorWidget(int row,int column):
-                      _row(row),_column(column),_selectedNum(-1)
+                      _row(row),_column(column),_selectedNum(-1),_touchingLabel(NULL)
 {
 
     editWidgetInit();
@@ -18,12 +19,18 @@ EditorWidget::EditorWidget(int row,int column):
 }
 void EditorWidget::editWidgetInit()
 {
-    _gridLayout = new QGridLayout(this);
+    _blocksBoard = new QWidget(this);
+    _blocksBoard->setAttribute(Qt::WA_TransparentForMouseEvents);
+    _gridLayout = new QGridLayout(_blocksBoard);
     //设置编辑区的背景颜色
     QPalette palette;
     palette.setColor(QPalette::Background, QColor(192,253,123));
     setPalette(palette);
-    resize(BLOCK_WIDTH*(_column+0.2),BLOCK_HEIGHT*(_row+0.2));
+    _blocksBoard->resize(BLOCK_WIDTH*(_column+0.2),BLOCK_HEIGHT*(_row+0.2));
+    this->resize(640,800);
+    int x =(width()-BLOCK_WIDTH*(_column+0.2))/2;
+    int y =(height() - BLOCK_HEIGHT*(_row+0.2))/2;
+    _blocksBoard->setGeometry(x,y,_blocksBoard->width(),_blocksBoard->height());
 }
 void EditorWidget::blocksInit()
 {
@@ -33,7 +40,7 @@ void EditorWidget::blocksInit()
         for(int j = 0; j < _column ; j++)
         {
             qDebug() << "position is " << _row << _column << endl;
-            BlockLabel* block = new BlockLabel(this);
+            BlockLabel* block = new BlockLabel(_blocksBoard);
             //block->installEventFilter(this);
             block->setAttribute(Qt::WA_TransparentForMouseEvents);
             QString rowStr;
@@ -59,18 +66,30 @@ void EditorWidget::setColumn(int num)
 }
 float EditorWidget::getMouseX()
 {
-    return _mouseX;
+    if(_touchingLabel == NULL)
+        return _mouseX;
+    else
+        return _touchingLabel->x();
 }
 float EditorWidget::getMouseY()
 {
-    return _mouseY;
+    if(_touchingLabel == NULL)
+        return _mouseY;
+    else
+        return _touchingLabel->y();
 
 }
 void EditorWidget::mousePressEvent(QMouseEvent *event)
 {
-    int num = event->x()/BLOCK_WIDTH + event->y()/BLOCK_HEIGHT*_column;
-    qDebug() << event->x()/BLOCK_WIDTH<< "###" << event->y()/BLOCK_HEIGHT <<endl;
-    if(_selectedNum != num && num != _column*_row)
+    if(event->x() >= _blocksBoard->x()+_blocksBoard->width() ||
+          event->y() >= _blocksBoard->y()+_blocksBoard->height() ||
+            event->y() <= _blocksBoard->y() || event->x() <= _blocksBoard->x())
+    {
+        return;
+    }
+    int num = (event->x()-_blocksBoard->x())/BLOCK_WIDTH + (event->y()-_blocksBoard->y())/BLOCK_HEIGHT*_column;
+    qDebug() << (event->x()-_blocksBoard->x())/BLOCK_WIDTH<< "###" << (event->y()-_blocksBoard->y())/BLOCK_HEIGHT <<endl;
+    if(_selectedNum != num && num < _column*_row)
     {
         if(_selectedNum != -1)
         {
@@ -106,7 +125,7 @@ void EditorWidget::msgHandler(BlockItem* item)
         _blocks.at(_selectedNum)->setPixmap(pixmap);
         _blocks.at(_selectedNum)->setProperty(item);
         qDebug() << "####msgHandle####" << _blocks.at(_selectedNum)->getPropertys()->_type << "##########";
-        qDebug() << "####msgHandle####" << item->_matchType << "##########";
+        qDebug() << "####msgHandle####" << item->_frozen << "##########";
     }
     }
 
@@ -124,7 +143,8 @@ void EditorWidget::addDragLabel(QListWidgetItem* item)
     QPixmap pixMap(chImageDir);
     label->setPixmap(pixMap);
     label->setGeometry(this->width()/2,this->height()/2,pixMap.width(),pixMap.height());
-
+    connect(label,SIGNAL(sendTouchingLabel(DragLabel*)),this,SLOT(touchingLabel(DragLabel*)));
+    connect(label,SIGNAL(sendTouchEnd()),this,SLOT(touchingClean()));
     _dragLabels.append(label);
 
 }
@@ -203,32 +223,14 @@ void EditorWidget::actionInit()
 }
 void EditorWidget::contextMenuEvent(QContextMenuEvent *event)
 {
-    //if()
-    qDebug() << "####################" << endl;
     int type = _blocks.at(_selectedNum)->getPropertys()->_type;
     if(type == -1)
         return;
 
      _mainMenu = new QMenu(this);
-
-//    _colorMenu = _mainMenu->addMenu("color");
-//    _colorMenu->addAction(_blueColor);
-//    _colorMenu->addAction(_yellowColor);
-//    _colorMenu->addAction(_redColor);
-//    _colorMenu->addAction(_pinkColor);
-//    _colorMenu->addAction(_greenColor);
     setActionStatus();
-
-
-
-
     _mainMenu->addAction(_addGroup);
     _mainMenu->exec(event->globalPos());
-
-
-//    QCursor cur=this->cursor();
-//    _mainMenu->exec(cur.pos()); //关联到光标
-   //获取当前的Label状态
 
 }
 //用来处理QAction
@@ -257,10 +259,12 @@ void EditorWidget::setBlueBlock()
             changeBlockResource(BlueBlock);
              _blocks.at(_selectedNum)->getPropertys()->_type = 0;
         }
-        else if(type == 9)
+        else if(7 <= type && type <=11)
         {
             changeBlockResource(BlueColorBomb);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
+            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
+            _blocks.at(_selectedNum)->getPropertys()->_type = 7;
+            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = BLUE;
         }
         else if(type == 999)
         {
@@ -280,11 +284,14 @@ void EditorWidget::setYellowBlock()
         {
              changeBlockResource(YellowBlock);
              _blocks.at(_selectedNum)->getPropertys()->_type = 1;
+             _blocks.at(_selectedNum)->getPropertys()->_matchType = 1;
         }
-        else if(type == 9)
+        else if(7 <= type && type <=11)
         {
             changeBlockResource(YellowColorBomb);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 1;
+            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
+            _blocks.at(_selectedNum)->getPropertys()->_type = 8;
+            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = YELLOW;
         }
         else if(type == 999)
         {
@@ -304,12 +311,15 @@ void EditorWidget::setRedBlock()
         if(0 <= type&&type<=4)
         {
              _blocks.at(_selectedNum)->getPropertys()->_type = 2;
+             _blocks.at(_selectedNum)->getPropertys()->_matchType = 2;
              changeBlockResource(RedBlock);
         }
-        else if(type == 9)
+        else if(7 <= type && type <=11)
         {
             changeBlockResource(RedColorBomb);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 2;
+            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
+            _blocks.at(_selectedNum)->getPropertys()->_type = 9;
+            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = RED;
         }
         else if(type == 999)
         {
@@ -329,12 +339,15 @@ void EditorWidget::setGreenBlock()
         if(0 <= type&&type<=4)
         {
              _blocks.at(_selectedNum)->getPropertys()->_type = 3;
+             _blocks.at(_selectedNum)->getPropertys()->_matchType = 3;
              changeBlockResource(GreenBlock);
         }
-        else if(type == 9)
+        else if(7 <= type && type <=11)
         {
             changeBlockResource(GreenColorBomb);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 3;
+            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
+            _blocks.at(_selectedNum)->getPropertys()->_type = 10;
+            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = GREEN;
         }
         else if(type == 999)
         {
@@ -353,12 +366,15 @@ void EditorWidget::setPurpleBlock()
         if(0 <= type&&type<=4)
         {
              _blocks.at(_selectedNum)->getPropertys()->_type = 4;
+             _blocks.at(_selectedNum)->getPropertys()->_matchType = 4;
              changeBlockResource(PurpleBlock);
         }
-        else if(type == 9)
+        else if(7 <= type && type <=11)
         {
             changeBlockResource(PurpleColorBomb);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 4;
+            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
+            _blocks.at(_selectedNum)->getPropertys()->_type = 11;
+            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = PURPLE;
         }
         else if(type == 999)
         {
@@ -376,6 +392,7 @@ void EditorWidget::setFrozen0()
     if(0 <= type&&type<=4)
     {
          _blocks.at(_selectedNum)->getPropertys()->_frozenLevel = 0;
+         _blocks.at(_selectedNum)->getPropertys()->_frozen = false;
          _blocks.at(_selectedNum)->setSecondImg("");
          _blocks.at(_selectedNum)->setThirdImg("");
     }
@@ -386,6 +403,7 @@ void EditorWidget::setFrozen1()
     if(0 <= type&&type<=4)
     {
          _blocks.at(_selectedNum)->getPropertys()->_frozenLevel = 1;
+         _blocks.at(_selectedNum)->getPropertys()->_frozen = true;
          _blocks.at(_selectedNum)->setSecondImg(FrozenLevel1);
          _blocks.at(_selectedNum)->setThirdImg("");
     }
@@ -396,6 +414,7 @@ void EditorWidget::setFrozen2()
     if(0 <= type&&type<=4)
     {
          _blocks.at(_selectedNum)->getPropertys()->_frozenLevel = 2;
+         _blocks.at(_selectedNum)->getPropertys()->_frozen = true;
          _blocks.at(_selectedNum)->setSecondImg(FrozenLevel1);
          _blocks.at(_selectedNum)->setThirdImg(FrozenLevel2);
     }
@@ -408,7 +427,7 @@ void EditorWidget::setmultiply()
     {
         if(multiply == 0)
         {
-             _blocks.at(_selectedNum)->getPropertys()->_multiplier = 1;
+             _blocks.at(_selectedNum)->getPropertys()->_multiplier = 2;
              _blocks.at(_selectedNum)->setSecondImg(MultiplyFlag);
         }
         else
@@ -625,9 +644,9 @@ void EditorWidget::setActionStatus()
         setForzenStatus(frozenLevel);
         setmultiplyStatus(multiPly);
     }
-    else if (type == 9)
+    else if (7 <= type && type <= 11)
     {
-        int matchType =  _blocks.at(_selectedNum)->getPropertys()->_matchType;
+        int matchType = _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype;
         setColorActionStatus(matchType);
     }
     else if(type == 999)
@@ -638,6 +657,22 @@ void EditorWidget::setActionStatus()
         setBoxColorActionStatus(matchType,boxedFlag);
     }
 
+}
+QString EditorWidget::getResourceFromConfig(const char* configName,QString name)
+{
+  BlockItemArray array = JsonHandle::getInstance()->parserConfigJson(BlockConfigPath);
+  for(int i = 0 ; i < array.size(); i++)
+  {
+        if(name.compare(array.at(i)->_pillarName) == 0)
+        {
+            return array.at(i)->_resource;
+        }
+  }
+  return QString::null;
+}
+void EditorWidget::setBlocksStatus(BlockLabel* item)
+{
+    if(item->getPropertys()->_pillarName.compare("")==0);
 }
 void EditorWidget::exportBlocksMsg()
 {
@@ -659,4 +694,16 @@ int EditorWidget::getColumn()
 QVector<BlockLabel*> EditorWidget::getBlocks()
 {
     return _blocks;
+}
+QVector<DragLabel*> EditorWidget::getConstraints()
+{
+    return _dragLabels;
+}
+void EditorWidget::touchingLabel(DragLabel* label)
+{
+    _touchingLabel = label;
+}
+void EditorWidget::touchingClean()
+{
+    _touchingLabel = NULL;
 }

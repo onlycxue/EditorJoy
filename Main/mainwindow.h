@@ -17,6 +17,8 @@
 #include "../Global/global.h"
 #include "../DialogWidget/createdialogwidget.h"
 #include "../Block/blockitem.h"
+#include "../FileManage/exportfile.h"
+
 
 class MainWindow : public QMainWindow
 {
@@ -40,6 +42,7 @@ public slots:
      void showCreateDialog();
      void createEditorWidget(DialogMsg* msg);
      void exportFileHandle();
+     void importFileHandle();
 private:
     QToolBar *_toolbar;
     QVector<QMenu*> _menus;
@@ -56,6 +59,7 @@ private:
     QLabel *_posStatusBar;
     QAction *_createFile;
     QAction *_exportFile;
+    QAction *_importFile;
     QTimer* _timer;
     CreateFile* _createDialog;
 

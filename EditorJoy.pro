@@ -22,7 +22,9 @@ SOURCES += \
     OrnamentalWidget/ornamentalwidget.cpp \
     Main/main.cpp \
     Main/mainwindow.cpp \
-    DialogWidget/createdialogwidget.cpp
+    DialogWidget/createdialogwidget.cpp \
+    FileManage/exportfile.cpp \
+    FileManage/importfile.cpp
 HEADERS  += \
     Block/blockbutton.h \
     Block/blockitem.h \
@@ -35,7 +37,9 @@ HEADERS  += \
     OrnamentalWidget/draglabel.h \
     OrnamentalWidget/ornamentalwidget.h \
     Main/mainwindow.h \
-    DialogWidget/createdialogwidget.h
+    DialogWidget/createdialogwidget.h \
+    FileManage/exportfile.h \
+    FileManage/importfile.h
 
 RESOURCES += \
     Resource/config.qrc \

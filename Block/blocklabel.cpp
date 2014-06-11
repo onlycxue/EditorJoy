@@ -53,6 +53,7 @@ void BlockLabel::setProperty(BlockItem* item)
     _propertys->_multiplier = item->_multiplier;
     _propertys->_type = item->_type;
     _propertys->_randomizedColor = item->_randomizedColor;
+    _propertys->_colorbombmatchtype = item->_colorbombmatchtype;
     _propertys->_boxed = item->_boxed;
     _propertys->_resource = item->_resource;
 

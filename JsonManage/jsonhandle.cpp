@@ -60,7 +60,7 @@ BlockItemArray JsonHandle::parserConfigJson(const char * fileDir)
                 if (file.exists())
                 {
                     BlockItem *item = new BlockItem();
-
+                    item->init();
                     item->_type = blockType;
                     item->_matchType = matchType;
                     item->_frozenLevel = frozenLevel;
@@ -112,7 +112,7 @@ void JsonHandle::parserRuleJson(const char * fileDir)
 
                 if(pillarName.compare("PRRuleCommonBlock") == 0)
                 {
-                    QString blockType = blocksInfo.take("type").toString();
+                    int blockType = blocksInfo.take("type").toInt();
                     int matchType = blocksInfo.take("matchType").toInt();
                     int frozenLevel = blocksInfo.take("frozenLevel").toInt();
                     int multiplyFlag = blocksInfo.take("multiplier").toInt();
@@ -122,7 +122,7 @@ void JsonHandle::parserRuleJson(const char * fileDir)
 
                     BlockItem *item = new BlockItem();
                     item->_pillarName = "PRRuleCommonBlock";
-                    item->_type = blockType.toInt();
+                    item->_type = blockType;
                     item->_matchType = matchType;
                     item->_frozenLevel = frozenLevel;
                     item->_multiplier = multiplyFlag;
@@ -130,6 +130,7 @@ void JsonHandle::parserRuleJson(const char * fileDir)
                     item->_blockId = blockId;
                     item->_randomizedColor = randomizedColor;
                     _PRRuleCommonBlocks.append(item);
+                    _rules.append(item);
                 }
                 else if(pillarName.compare("PRRuleColorBombBlock") == 0)
                 {
@@ -140,12 +141,14 @@ void JsonHandle::parserRuleJson(const char * fileDir)
                     int colorbombmatchtype = blocksInfo.take("colorbombmatchtype").toInt();
 
                     BlockItem *item = new BlockItem();
+                    item->init();
                     item->_pillarName = "PRRuleColorBombBlock";
                     item->_type = blockType;
                     item->_matchType = matchType;
                     item->_blockId = blockId;
                     item->_colorbombmatchtype = colorbombmatchtype;
                     _PRRuleColorBombBlocks.append(item);
+                    _rules.append(item);
                 }
                 else if(pillarName.compare("PRRulePetBlock") == 0)
                 {
@@ -156,6 +159,7 @@ void JsonHandle::parserRuleJson(const char * fileDir)
                     QString ruleName = blocksInfo.take("rulename").toString();
 
                     BlockItem *item = new BlockItem();
+                    item->init();
                     item->_pillarName = "PRRulePetBlock";
                     item->_type = blockType;
                     item->_matchType = matchType;
@@ -163,20 +167,23 @@ void JsonHandle::parserRuleJson(const char * fileDir)
                     item->_rulename = ruleName;
                     item->_boxed = boxed;
                     _PRRulePetBlocks.append(item);
+                    _rules.append(item);
                 }
                 else
                 {
-                    QString pillarName = blocksInfo.take("pillarName").toString();
+                    //QString pillarName = blocksInfo.take("pillarName").toString();
                     int blockType = blocksInfo.take("type").toInt();
                     int matchType = blocksInfo.take("matchType").toInt();
                     int blockId = blocksInfo.take("blockId").toInt();
 
                     BlockItem *item = new BlockItem();
+                    item->init();
                     item->_pillarName = pillarName;
                     item->_type = blockType;
                     item->_matchType = matchType;
                     item->_blockId = blockId;
                     _otherBlocks.append(item);
+                    _rules.append(item);
                 }
 
             }
@@ -185,21 +192,22 @@ void JsonHandle::parserRuleJson(const char * fileDir)
     jsonFile.close();
 
 }
-void JsonHandle::createBlockIds(QString name,BlockItem* item)
+void JsonHandle:: createBlockIds(QString name,BlockItem* item)
 {
+
     if(name.compare("PRRuleCommonBlock") == 0)
     {
         for(int i = 0; i < _PRRuleCommonBlocks.size(); i++)
         {
             BlockItem  *block = _PRRuleCommonBlocks.at(i);
             if(block->_type == item->_type &&
-               block->_matchType == item->_matchType &&
                block->_frozenLevel == item->_frozenLevel &&
                block->_multiplier == item->_multiplier &&
+               block->_matchType == item->_matchType &&
                block->_frozen == item->_frozen &&
-               block->_randomizedColor == item->_randomizedColor){
-
+               block->_randomizedColor == item->_randomizedColor){                      
                 _blockIds.append(block->_blockId);
+                _exportBlocksRule.append(block);
                 break;
             }
 
@@ -209,12 +217,14 @@ void JsonHandle::createBlockIds(QString name,BlockItem* item)
     {
         for(int i = 0; i < _PRRuleColorBombBlocks.size(); i++)
         {
+
             BlockItem  *block = _PRRuleColorBombBlocks.at(i);
             if(block->_type == item->_type &&
                block->_matchType == item->_matchType &&
                block->_colorbombmatchtype == item->_colorbombmatchtype){
 
                 _blockIds.append(block->_blockId);
+                _exportBlocksRule.append(block);
                break;
             }
 
@@ -222,14 +232,17 @@ void JsonHandle::createBlockIds(QString name,BlockItem* item)
     }
     else if(name.compare("PRRulePetBlock") == 0)
     {
-        for(int i = 0; i < _PRRuleColorBombBlocks.size(); i++)
+        for(int i = 0; i < _PRRulePetBlocks.size(); i++)
         {
-            BlockItem  *block = _PRRuleColorBombBlocks.at(i);
+            BlockItem  *block = _PRRulePetBlocks.at(i);
+
+
             if(block->_type == item->_type &&
                block->_matchType == item->_matchType &&
                block->_rulename == item->_rulename &&
                block->_boxed == item->_boxed){
                 _blockIds.append(block->_blockId);
+                _exportBlocksRule.append(block);
                break;
             }
 
@@ -240,10 +253,12 @@ void JsonHandle::createBlockIds(QString name,BlockItem* item)
         for(int i = 0; i < _otherBlocks.size(); i++)
         {
             BlockItem  *block = _otherBlocks.at(i);
+             qDebug() << "_PRRulePetBlocks:" << block->_pillarName;
             if(block->_type == item->_type &&
                block->_matchType == item->_matchType)
             {
                 _blockIds.append(block->_blockId);
+                _exportBlocksRule.append(block);
                break;
             }
 
@@ -252,89 +267,186 @@ void JsonHandle::createBlockIds(QString name,BlockItem* item)
     }
 
 }
-void JsonHandle::exportJson(QVector<BlockLabel*> blockArray,int row,int column,const char *exportDir)
+void JsonHandle::createGridIds()
 {
-    //parserRuleByName(RuleConfigPath);
+    for(int i = 0; i < _blockIds.size(); i++)
+    {
+        if(_blockIds.at(i) == 2001)
+        {
+            _gridIds.append(2);
+        }
+        else
+        {
+            _gridIds.append(1);
+        }
+    }
+}
+QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<DragLabel*> constraintArray,int row,int column,const char *exportDir)
+{
     parserRuleJson(RuleConfigPath);
-    //获取blockId
-
-    qDebug() << "_PRRuleCommonBlocks:" << _PRRuleCommonBlocks.size();
-    qDebug() << "_PRRulePetBlocks:" << _PRRulePetBlocks.size();
-    qDebug() << "_otherBlocks:" << _otherBlocks.size();
-    qDebug() << "_PRRuleColorBombBlocks:" << _PRRuleColorBombBlocks.size();
 
     for(int i = 0 ; i < blockArray.size();i++)
     {
         QString name = blockArray.at(i)->getPropertys()->_pillarName;
         createBlockIds(name,blockArray.at(i)->getPropertys());
     }
-    qDebug() <<"blockIds:"<< _blockIds.size() << endl;
-    for(int i = 0 ; i < _blockIds.size() ; i++ )
+    createGridIds();
+
+    QJsonDocument jsonDocument;
+    QJsonObject jsonLevel;
+    QJsonArray blockIdArray;
+    QJsonArray gridIdArray;
+
+    QJsonArray ruleArray;
+    for(int i = 0 ; i < _exportBlocksRule.size();i++)
     {
-        printf("%d  ",_blockIds.at(i));
-        if(i % column ==0)
+        QJsonObject ruleObject;
+        BlockItem  *block = _exportBlocksRule.at(i);
+
+        QString name = block->_pillarName;
+        if(name.compare("PRRuleCommonBlock") == 0)
         {
-            printf("\n");
+
+            ruleObject.insert("pillarName",block->_pillarName);
+            ruleObject.insert("randomizedColor",block->_randomizedColor);
+            ruleObject.insert("frozen",block->_frozen);
+            ruleObject.insert("type",block->_type);
+            ruleObject.insert("matchType",block->_matchType);
+            ruleObject.insert("frozenLevel",block->_frozenLevel);
+            ruleObject.insert("multiplier",block->_multiplier);
+            ruleObject.insert("blockId",block->_blockId);
         }
+        else if(name.compare("PRRuleColorBombBlock") == 0)
+        {
+
+            ruleObject.insert("pillarName",block->_pillarName);
+            ruleObject.insert("type",block->_type);
+            ruleObject.insert("matchType",block->_matchType);
+            ruleObject.insert("randomizedColor",block->_randomizedColor);
+            ruleObject.insert("blockId",block->_blockId);
+        }
+        else if(name.compare("PRRulePetBlock") == 0)
+        {
+
+            ruleObject.insert("pillarName",block->_pillarName);
+            ruleObject.insert("type",block->_type);
+            ruleObject.insert("matchType",block->_matchType);
+            ruleObject.insert("boxed",block->_boxed);
+            ruleObject.insert("blockId",block->_blockId);
+        }
+        else
+        {
+
+            ruleObject.insert("pillarName",block->_pillarName);
+            ruleObject.insert("type",block->_type);
+            ruleObject.insert("matchType",block->_matchType);
+            ruleObject.insert("blockId",block->_blockId);
+        }
+        ruleArray.insert(i,ruleObject);
+    }
+    jsonLevel.insert("rules",ruleArray);
+    jsonLevel.insert("cols",column);
+    jsonLevel.insert("rows",row);
+
+    for(int i = 0; i< _blockIds.size();i++)
+    {
+        blockIdArray.insert(i,QJsonValue(_blockIds.at(i)));
     }
 
+    jsonLevel.insert("initialBlocks",blockIdArray);
+
+    for(int i = 0; i < _gridIds.size();i++)
+    {
+        gridIdArray.insert(i,QJsonValue(_gridIds.at(i)));
+    }
+
+    jsonLevel.insert("backgroundGrid",gridIdArray);
+
+    QJsonArray jsonConstraints;
+    for(int i=0;i<constraintArray.size();i++){
+        //生成json
+        DragLabel * constraint = constraintArray.at(i);
+        QJsonObject jsonConstraint;
+
+        jsonConstraint.insert("xOffset", constraint->geometry().x());
+        jsonConstraint.insert("yOffset", constraint->geometry().y());
+
+        jsonConstraint.insert("resource", QString(constraint->m_strImageName.c_str()).split(".").at(0));
+        jsonConstraint.insert("iOffsetToTop", 600);
+
+        jsonConstraints.insert(i,jsonConstraint);
+    }
+    jsonLevel.insert("constraintSprites",jsonConstraints);
+
+    jsonDocument.setObject(jsonLevel);
+
+
+    return jsonDocument;
 }
 
-//void JsonHandle::parserRuleByName(const char* fileName)
-//{
-//    QFile jsonFile(fileName);
-//    qDebug() << fileName << endl;
-//    if(!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
-//    {
-//        qDebug() << "open file error!" << endl;
-//    }
+QVector<BlockItem*> JsonHandle::parserJsonFileForBlocks(const char * fileDir)
+{
+    _rules.clear();
+    parserRuleJson(fileDir);
+    return _rules;
+}
+QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir,QWidget* parent)
+{
 
-//    QTextStream txtInput(&jsonFile);
-//    QString fileStr;
-//    fileStr = txtInput.readAll();
-//    //解析关卡文件
-//    //qDebug() << fileStr << endl;
-//    QJsonParseError json_error;
-//    QJsonDocument parse_doucment = QJsonDocument::fromJson(fileStr.toUtf8(), &json_error);
+        QFile fileLevel(fileDir);
+        if(!fileLevel.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            //std::cout << "Open failed." << std::endl;
+           // return ;
+        }
 
-//    qDebug() << json_error.error << endl;
-//    if(json_error.error == QJsonParseError::NoError)
-//    {
-//        if(parse_doucment.isObject())
-//        {
-//            QJsonObject obj = parse_doucment.object();
-//            QJsonArray blocksArray = obj.take("rules").toArray();
+        QTextStream txtInput(&fileLevel);
+        QString fileStr;
 
-//            for (int i = 0;  i< blocksArray.size(); i++)
-//            {
+        fileStr = txtInput.readAll();
+        //解析关卡文件
+        QJsonParseError json_error;
+        QJsonDocument parse_doucment = QJsonDocument::fromJson(fileStr.toUtf8(), &json_error);
 
-//                QJsonObject blocksInfo = blocksArray.at(i).toObject();
-//                QString pillarName = blocksInfo.take("pillarName").toString();
-//                //比较常规方块
-//                if(pillarName.compare("PRRuleCommonBlock") == 0)
-//                {
+        if(json_error.error == QJsonParseError::NoError){
+            if(parse_doucment.isObject())  {
 
-//                    int matchType = blocksInfo.take("matchType").toInt();
-//                    int frozenLevel = blocksInfo.take("frozenLevel").toInt();
-//                    int multiplyFlag = blocksInfo.take("multiplier").toInt();
-//                    if(multiplyFlag != 2)
-//                    {
-//                        multiplyFlag = 0;
-//                    }
-//                    int type = blocksInfo.take("type").toInt();
-//                    int blockId = blocksInfo.take("blockId").toInt();
+                //解析行列数据
+                QJsonObject obj = parse_doucment.object();
+                //解析装饰物数据
+                QJsonArray arrayConstraints = obj.take("constraintSprites").toArray();
+                //by cxue
+                qDebug() << "arrayConstrains.size :" << arrayConstraints.size() << endl;
+                for (int i = 0;  i< arrayConstraints.size(); i++) {
+                    QJsonObject constraintInfo = arrayConstraints.at(i).toObject();
+                    QString resName = constraintInfo.take("resource").toString();
+                    int xOffset = constraintInfo.take("xOffset").toInt();
+                    int yOffset = constraintInfo.take("yOffset").toInt();
+                    int offsetToTop = constraintInfo.take("iOffsetToTop").toInt();
+                    char chImageDir[200];
+                    sprintf(chImageDir,"%s/%s.png",ConstraintsBasePath,resName.toUtf8().data());
+                    qDebug()<< "chImageDir is " << chImageDir << endl;
+                    QFile file(chImageDir);
+                    if (file.exists()){
+                        qDebug() << " yes the file is exit" << endl;
+                        DragLabel * label = new DragLabel(parent);
+                        label->show();
+                        char chImageDir[200];
+                        sprintf(chImageDir,"%s/%s",ConstraintsBasePath,resName.toUtf8().data());
 
-//                    BlockItem *item = new BlockItem();
-//                    item->_type = type;
-//                    item->_matchType = matchType;
-//                    item->_frozenLevel = frozenLevel;
-//                    item->_multiplier = multiplyFlag;
-//                    item->_blockId = blockId;
-//                    _PRRuleCommonBlocks.append(item);
-//                }
+                        label->m_strImageName = resName.toUtf8().data();
+                        QPixmap pixMap(chImageDir);
+                        label->setPixmap(pixMap);
+                       // label->setGeometry(xOffset,_widgetBlocksHeight - yOffset - pixMap.height(),pixMap.width(),pixMap.height());
+                        label->setGeometry(xOffset,yOffset,pixMap.width(),pixMap.height());
 
-//            }
-//        }
-//    }
-//    jsonFile.close();
-//}
+                        _constraints.append(label);
+                    }
+                }
+            }
+        }
+        fileLevel.close();
+        return _constraints;
+}
+
+

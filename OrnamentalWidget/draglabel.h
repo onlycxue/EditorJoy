@@ -16,7 +16,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
 signals:
-
+    void sendTouchingLabel(DragLabel*);
+    void sendTouchEnd();
 public slots:
    // void removeFromParent();
     void bringToTop();

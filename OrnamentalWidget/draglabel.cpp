@@ -29,7 +29,7 @@ void DragLabel::mouseMoveEvent(QMouseEvent *event)
         labelGeometry.setWidth(imgWidth);
         labelGeometry.setHeight(imageHeight);
         this->setGeometry(labelGeometry);
-        qDebug() << "x :" << event->x() << "  " << "y: " << event->y();
+        qDebug() << "x :" << this->x() << "  " << "y: " << this->y();
     }
 }
 
@@ -39,11 +39,13 @@ void DragLabel::mousePressEvent(QMouseEvent *event)
     previousPos = QPoint(event->x(),event->y());
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
     this->raise();
+    emit sendTouchingLabel(this);
 }
 
 void DragLabel::mouseReleaseEvent(QMouseEvent *event)
 {
     bIsTouching = false;
+    emit sendTouchEnd();
 }
 
 void DragLabel::contextMenuEvent(QContextMenuEvent *event) //右键菜单项编辑

@@ -43,8 +43,14 @@ void MainWindow::menubarInit()
     filemenu->addAction(_createFile);
     connect(_createFile,SIGNAL(triggered()),this,SLOT(showCreateDialog()));
     _exportFile = new QAction("导出...",this);
-    filemenu->addAction(_exportFile);
+    filemenu->addAction(_exportFile);  
     connect(_exportFile,SIGNAL(triggered()),this,SLOT(exportFileHandle()));
+    _importFile = new QAction("导入...",this);
+    filemenu->addAction(_importFile);
+    connect(_importFile,SIGNAL(triggered()),this,SLOT(importFileHandle()));
+
+
+
 
 
     _menus.append(filemenu);
@@ -165,10 +171,28 @@ void MainWindow::exportFileHandle()
     if(_editorWidget != NULL)
     {
          _editorWidget->exportBlocksMsg();
-        JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),
+      QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
                                               _editorWidget->getRow(),_editorWidget->getColumn(),"");
+      new ExportFile(document,this);
     }
 }
+void MainWindow::importFileHandle()
+{
+
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                    "./Export",
+                                                    tr("Text files (*.json)"));
+    QVector<BlockItem*> blocks = JsonHandle::getInstance()->parserJsonFileForBlocks(fileName.toUtf8().data());
+    _editorWidget = new EditorWidget(4,4);
+    _editorArea->setWidget(_editorWidget);
+    connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
+    connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
+
+    _timer->start();
+    QVector<DragLabel*> label = JsonHandle::getInstance()->parserJsonFileForconstraint(fileName.toUtf8().data(),_editorWidget);
+
+}
+
 MainWindow::~MainWindow()
 {
 
