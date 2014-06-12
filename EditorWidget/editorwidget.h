@@ -29,7 +29,7 @@ public:
         GREEN,
         PURPLE
     };
-    EditorWidget( QVector<BlockLabel*> blocks,QVector<DragLabel*> constraints,int row,int column);
+    EditorWidget(DataFormat* data);
     EditorWidget(int row,int column);
     void setRow(int num);
     void setColumn(int num);
@@ -47,13 +47,16 @@ public:
     void setBoxColorActionStatus(int type,bool flag);
     void setForzenStatus(int level);
     void setmultiplyStatus(int level);
-    void changeBlockResource(const char* file);
+    void changeBlockResource(const char* file,BlockLabel* item);
     void exportBlocksMsg();
-    void setBlocksStatus(BlockItem* item);
-    QString getResourceFromConfig(const char* configName,QString name);
+    void setBlocksStatus(BlockLabel* item);
+    void setBlockColor(BlockLabel*  item);
+    void setPetBoxedColor(BlockLabel*  item);
+    QString getResourceFromConfig(QString name);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     virtual void contextMenuEvent(QContextMenuEvent *event);
+    ~EditorWidget();
 public slots:
     void msgHandler(BlockItem* block);
     void addDragLabel(QListWidgetItem* item);
@@ -69,6 +72,7 @@ public slots:
     void setNoBox();
     void touchingLabel(DragLabel* label);
     void touchingClean();
+    void deleteDragLabel(DragLabel* item);
 private:
     int _row;
     int _column;

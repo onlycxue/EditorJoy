@@ -577,6 +577,16 @@
          "type": 4,
          "matchType": 4,
          "frozenLevel": 2
+ }
+ , {
+         "blockId": 1069,
+         "pillar": "com.king.petrescue.game.pillar.rule.PRRuleCommonBlock",
+         "pillarName": "PRRuleCommonBlock",
+         "multiplier": 0,
+         "frozen": true,
+         "type": 4,
+         "matchType": 4,
+         "frozenLevel": 2
  },
  {
              "pillarName": "PRRuleInfectedBlock",
@@ -585,6 +595,15 @@
              "type": 20,
              "pillar": "com.king.petrescue.game.pillar.rule.PRRuleInfectedBlock"
  }
+{
+            "blockId": 1035,
+            "pillar": "com.king.petrescue.game.pillar.rule.PRRulePetBlock",
+            "boxed": true,
+            "pillarName": "PRRulePetBlock",
+            "rulename": "pet_boxed_red",
+            "matchType": 0, 
+            "type": 999
+        }
  ,
 {
             "blockId": 1035,
@@ -630,6 +649,15 @@
              "pillarName": "PRRulePetBlock",
              "rulename": "pet_boxed_purple",
              "matchType": 4,
+             "type": 999
+ }
+  , {
+             "blockId": 1050,
+             "pillar": "com.king.petrescue.game.pillar.rule.PRRulePetBlock",
+             "boxed": false,
+             "pillarName": "PRRulePetBlock",
+             "rulename": "pet_boxed_purple",
+             "matchType": 0,
              "type": 999
  }
  , {

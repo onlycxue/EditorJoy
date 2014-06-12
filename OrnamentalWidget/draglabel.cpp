@@ -10,7 +10,7 @@ DragLabel::DragLabel(QWidget *parent) :
 {
     m_strImageName = "";
     Act_Delete = new QAction("Delete", this);
-//    connect(Act_Delete, SIGNAL(triggered()), this, SLOT(removeFromParent()));
+    connect(Act_Delete, SIGNAL(triggered()), this, SLOT(removeFromParent()));
     //
 }
 
@@ -56,20 +56,13 @@ void DragLabel::contextMenuEvent(QContextMenuEvent *event) //右键菜单项编�
     menu->exec(cur.pos()); //关联到光标
 }
 
-//void DragLabel::removeFromParent()
-//{
-//    this->hide();
-//    for (std::vector<DragLabel*>::iterator it = MainWindow::getInstance()->currentLevelInfo()->constraints.begin(); it != MainWindow::getInstance()->currentLevelInfo()->constraints.end();){
-//       if( (*it) == this){
-//          it = MainWindow::getInstance()->currentLevelInfo()->constraints.erase(it);
-//          break;
-//       }else{
-//          ++it;
-//       }
-//    }
-//    qDebug() << "left constraints: "<< MainWindow::getInstance()->currentLevelInfo()->constraints.size(); //解析字段
-//    delete this;
-//}
+void DragLabel::removeFromParent()
+{
+    this->hide();
+
+    emit sendDeleteLabel(this);
+    //delete this;
+}
 
 void DragLabel::bringToTop(){
     this->setWindowFlags(Qt::WindowStaysOnTopHint);

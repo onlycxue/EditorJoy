@@ -1,9 +1,26 @@
 #include "editorwidget.h"
 
-EditorWidget::EditorWidget( QVector<BlockLabel*> blocks,QVector<DragLabel*> constraints,int row,int column):
-    _dragLabels(constraints),_blocks(blocks)
+EditorWidget::EditorWidget(DataFormat* data):_row(data->_rows),_column(data->_column),
+    _dragLabels(data->_constraints),_touchingLabel(NULL),_selectedNum(-1)
 {
+    editWidgetInit();
+    blocksInit();
+    this->setMouseTracking(true);
+    actionInit();
+    this->setContextMenuPolicy(Qt::DefaultContextMenu);
+    for(int i = 0 ; i <data->_blocks.size();i++)
+    {
+        _blocks.at(i)->setProperty(data->_blocks.at(i));
+        setBlocksStatus(_blocks.at(i));
+    }
+    for(int i = 0 ; i < _dragLabels.size(); i++)
+    {
+        _dragLabels.at(i)->setParent(this);
+        connect(_dragLabels.at(i),SIGNAL(sendTouchingLabel(DragLabel*)),this,SLOT(touchingLabel(DragLabel*)));
+        connect(_dragLabels.at(i),SIGNAL(sendTouchEnd()),this,SLOT(touchingClean()));
+        connect(_dragLabels.at(i),SIGNAL(sendDeleteLabel(DragLabel*)),this,SLOT(deleteDragLabel(DragLabel*)));
 
+    }
 
 }
 EditorWidget::EditorWidget(int row,int column):
@@ -88,9 +105,12 @@ void EditorWidget::mousePressEvent(QMouseEvent *event)
         return;
     }
     int num = (event->x()-_blocksBoard->x())/BLOCK_WIDTH + (event->y()-_blocksBoard->y())/BLOCK_HEIGHT*_column;
-    qDebug() << (event->x()-_blocksBoard->x())/BLOCK_WIDTH<< "###" << (event->y()-_blocksBoard->y())/BLOCK_HEIGHT <<endl;
+    //qDebug() << (event->x()-_blocksBoard->x())/BLOCK_WIDTH<< "###" << (event->y()-_blocksBoard->y())/BLOCK_HEIGHT <<endl;
+    qDebug() << "Select Num:" << num;
+    qDebug() << "_blocks Size:" << _blocks.size();
     if(_selectedNum != num && num < _column*_row)
     {
+
         if(_selectedNum != -1)
         {
            _blocks.at(_selectedNum)->setSelect(false);
@@ -145,6 +165,7 @@ void EditorWidget::addDragLabel(QListWidgetItem* item)
     label->setGeometry(this->width()/2,this->height()/2,pixMap.width(),pixMap.height());
     connect(label,SIGNAL(sendTouchingLabel(DragLabel*)),this,SLOT(touchingLabel(DragLabel*)));
     connect(label,SIGNAL(sendTouchEnd()),this,SLOT(touchingClean()));
+    connect(label,SIGNAL(sendDeleteLabel(DragLabel*)),this,SLOT(deleteDragLabel(DragLabel*)));
     _dragLabels.append(label);
 
 }
@@ -234,19 +255,15 @@ void EditorWidget::contextMenuEvent(QContextMenuEvent *event)
 
 }
 //用来处理QAction
-void EditorWidget::changeBlockResource(const char* file)
+void EditorWidget::changeBlockResource(const char* file,BlockLabel* item)
 {
     QPixmap pixmap(file);
-    if(_selectedNum != -1)
-    {
-        int width = _blocks.at(_selectedNum)->width();
-        int height = _blocks.at(_selectedNum)->height();
+    int width = item->width();
+    int height = item->height();
+    pixmap.scaled(width,height,Qt::KeepAspectRatio);
+    item->setScaledContents(true);
+    item->setPixmap(pixmap);
 
-        pixmap.scaled(width,height,Qt::KeepAspectRatio);
-        _blocks.at(_selectedNum)->setScaledContents(true);
-
-        _blocks.at(_selectedNum)->setPixmap(pixmap);
-    }
 }
 void EditorWidget::setBlueBlock()
 {
@@ -256,12 +273,12 @@ void EditorWidget::setBlueBlock()
         qDebug() << "########" << type << "##########";
         if(0 <= type&&type<=4)
         {
-            changeBlockResource(BlueBlock);
+            changeBlockResource(BlueBlock,_blocks.at(_selectedNum));
              _blocks.at(_selectedNum)->getPropertys()->_type = 0;
         }
         else if(7 <= type && type <=11)
         {
-            changeBlockResource(BlueColorBomb);
+            changeBlockResource(BlueColorBomb,_blocks.at(_selectedNum));
             //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
             _blocks.at(_selectedNum)->getPropertys()->_type = 7;
             _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = BLUE;
@@ -282,13 +299,14 @@ void EditorWidget::setYellowBlock()
         int type = _blocks.at(_selectedNum)->getPropertys()->_type;
         if(0 <= type&&type<=4)
         {
-             changeBlockResource(YellowBlock);
+
+            changeBlockResource(YellowBlock,_blocks.at(_selectedNum));
              _blocks.at(_selectedNum)->getPropertys()->_type = 1;
              _blocks.at(_selectedNum)->getPropertys()->_matchType = 1;
         }
         else if(7 <= type && type <=11)
         {
-            changeBlockResource(YellowColorBomb);
+            changeBlockResource(YellowColorBomb,_blocks.at(_selectedNum));
             //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
             _blocks.at(_selectedNum)->getPropertys()->_type = 8;
             _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = YELLOW;
@@ -312,11 +330,11 @@ void EditorWidget::setRedBlock()
         {
              _blocks.at(_selectedNum)->getPropertys()->_type = 2;
              _blocks.at(_selectedNum)->getPropertys()->_matchType = 2;
-             changeBlockResource(RedBlock);
+             changeBlockResource(RedBlock,_blocks.at(_selectedNum));
         }
         else if(7 <= type && type <=11)
         {
-            changeBlockResource(RedColorBomb);
+            changeBlockResource(RedColorBomb,_blocks.at(_selectedNum));
             //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
             _blocks.at(_selectedNum)->getPropertys()->_type = 9;
             _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = RED;
@@ -340,11 +358,11 @@ void EditorWidget::setGreenBlock()
         {
              _blocks.at(_selectedNum)->getPropertys()->_type = 3;
              _blocks.at(_selectedNum)->getPropertys()->_matchType = 3;
-             changeBlockResource(GreenBlock);
+             changeBlockResource(GreenBlock,_blocks.at(_selectedNum));
         }
         else if(7 <= type && type <=11)
         {
-            changeBlockResource(GreenColorBomb);
+            changeBlockResource(GreenColorBomb,_blocks.at(_selectedNum));
             //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
             _blocks.at(_selectedNum)->getPropertys()->_type = 10;
             _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = GREEN;
@@ -367,11 +385,11 @@ void EditorWidget::setPurpleBlock()
         {
              _blocks.at(_selectedNum)->getPropertys()->_type = 4;
              _blocks.at(_selectedNum)->getPropertys()->_matchType = 4;
-             changeBlockResource(PurpleBlock);
+             changeBlockResource(PurpleBlock,_blocks.at(_selectedNum));
         }
         else if(7 <= type && type <=11)
         {
-            changeBlockResource(PurpleColorBomb);
+            changeBlockResource(PurpleColorBomb,_blocks.at(_selectedNum));
             //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
             _blocks.at(_selectedNum)->getPropertys()->_type = 11;
             _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = PURPLE;
@@ -658,11 +676,15 @@ void EditorWidget::setActionStatus()
     }
 
 }
-QString EditorWidget::getResourceFromConfig(const char* configName,QString name)
+QString EditorWidget::getResourceFromConfig(QString name)
 {
+   qDebug() << "current name is " << name;
   BlockItemArray array = JsonHandle::getInstance()->parserConfigJson(BlockConfigPath);
   for(int i = 0 ; i < array.size(); i++)
   {
+        qDebug() << "{" ;
+        array.at(i)->printInfo();
+        qDebug() << "}";
         if(name.compare(array.at(i)->_pillarName) == 0)
         {
             return array.at(i)->_resource;
@@ -672,16 +694,134 @@ QString EditorWidget::getResourceFromConfig(const char* configName,QString name)
 }
 void EditorWidget::setBlocksStatus(BlockLabel* item)
 {
-    if(item->getPropertys()->_pillarName.compare("")==0);
+    if(item->getPropertys()->_pillarName.compare("PRRuleCommonBlock")==0)
+    {
+        int frozenLevel = item->getPropertys()->_frozenLevel;
+        int multiplyFlag = item->getPropertys()->_multiplier;
+        bool frozen = item->getPropertys()->_frozen;
+        setBlockColor(item);
+        if(frozen)
+        {
+            if(frozenLevel == 1)
+            {
+                item->setSecondImg(FrozenLevel1);
+            }
+            else if(frozenLevel == 2)
+            {
+                item->setSecondImg(FrozenLevel1);
+                item->setThirdImg(FrozenLevel2);
+            }
+        }
+        if(multiplyFlag == 2)
+        {
+            item->setSecondImg(MultiplyFlag);
+        }
+
+    }
+    else if(item->getPropertys()->_pillarName.compare("PRRuleColorBombBlock") == 0)
+    {
+        setBlockColor(item);
+    }
+    else if(item->getPropertys()->_pillarName.compare("PRRulePetBlock") == 0)
+    {
+        if(item->getPropertys()->_boxed)
+        {
+            setPetBoxedColor(item);
+        }
+        else
+        {
+            QString imageName = EditorWidget::getResourceFromConfig(item->getPropertys()->_pillarName);
+            changeBlockResource(imageName.toUtf8().data(),item);
+        }
+    }
+    else
+    {
+
+        QString imageName = EditorWidget::getResourceFromConfig(item->getPropertys()->_pillarName);
+        changeBlockResource(imageName.toUtf8().data(),item);
+
+    }
+}
+void EditorWidget::setBlockColor(BlockLabel*  item)
+{
+    switch(item->getPropertys()->_type)
+    {
+        case 0:
+               changeBlockResource(BlueBlock,item);
+               break;
+        case 1:
+               changeBlockResource(YellowBlock,item);
+               break;
+        case 2:
+               changeBlockResource(RedBlock,item);
+               break;
+        case 3:
+               changeBlockResource(GreenBlock,item);
+               break;
+        case 4:
+               changeBlockResource(PurpleBlock,item);
+               break;
+        case 7:
+               changeBlockResource(BlueColorBomb,item);
+               break;
+        case 8:
+               changeBlockResource(YellowColorBomb,item);
+               break;
+        case 9:
+               changeBlockResource(RedColorBomb,item);
+               break;
+        case 10:
+               changeBlockResource(GreenColorBomb,item);
+               break;
+        case 11:
+               changeBlockResource(PurpleColorBomb,item);
+               break;
+        default :
+               break;
+
+    }
+}
+void EditorWidget::setPetBoxedColor(BlockLabel*  item)
+{
+    switch(item->getPropertys()->_matchType)
+    {
+        case 0:
+               changeBlockResource(BlueCarrier,item);
+               break;
+        case 1:
+               changeBlockResource(YellowCarrier,item);
+               break;
+        case 2:
+               changeBlockResource(RedCarrier,item);
+               break;
+        case 3:
+               changeBlockResource(GreenCarrier,item);
+               break;
+        case 4:
+               changeBlockResource(PurpleCarrier,item);
+               break;
+        default:
+               break;
+    }
 }
 void EditorWidget::exportBlocksMsg()
 {
+    qDebug() << "############exportMsg#############" << endl;
     for(int i = 0;i < _blocks.size(); i++)
     {
         qDebug()<<"{" <<endl;
         _blocks.at(i)->getPropertys()->printInfo();
         qDebug()<<"}" <<endl;
     }
+}
+void EditorWidget::deleteDragLabel(DragLabel* item)
+{
+    int index = _dragLabels.indexOf(item);
+    qDebug() << "#####################delete###############"<< index;
+    _dragLabels.removeAt(index);
+    qDebug() << "#####################size:###############"<< _dragLabels.size();
+
+    //delete item;
 }
 int EditorWidget::getRow()
 {
@@ -706,4 +846,36 @@ void EditorWidget::touchingLabel(DragLabel* label)
 void EditorWidget::touchingClean()
 {
     _touchingLabel = NULL;
+}
+EditorWidget::~EditorWidget()
+{
+//    delete _mainMenu;
+//    delete _colorMenu;
+//    delete _frozenMenu;
+//    delete _boxedMenu;
+
+//    //二级菜单颜色
+
+//    delete _colorGroup;
+//    delete _blueColor;
+//    delete _yellowColor;
+//    delete _redColor;
+//    delete _pinkColor;
+//    delete _greenColor;
+
+
+//    //铁笼等级
+//    delete _frozenGroup;
+//    delete _frozen0;
+//    delete _frozen1;
+//    delete _frozen2;
+
+//    //boxed
+//    delete _boxedGroup;
+//    delete _noBox;
+
+//    delete _multiplier;
+//    delete _addGroup;
+
+//    delete _blocksBoard;
 }

@@ -18,6 +18,15 @@
 #include <QJsonValue>
 #include "../OrnamentalWidget/draglabel.h"
 
+typedef struct
+{
+    int _rows;
+    int _column;
+    QVector<BlockItem*> _blocks;
+    QVector<DragLabel*> _constraints;
+
+}DataFormat;
+
 class JsonHandle
 {
 public:
@@ -29,8 +38,9 @@ public:
                              int row,int column,
                              const char *exportDir);
     QVector<BlockItem*> parserJsonFileForBlocks(const char * fileDir);
-    QVector<DragLabel*> parserJsonFileForconstraint(const char* fileDir,QWidget* parent);
+    QVector<DragLabel*> parserJsonFileForconstraint(const char* fileDir);
 
+    DataFormat* parserExistFile(const char* fileDir);
     static JsonHandle* getInstance();
 
 private:
@@ -54,7 +64,10 @@ private:
     QVector<BlockItem*> _PRRuleColorBombBlocks;
     QVector<BlockItem*> _exportBlocksRule;
 
+    int _rows;
+    int _column;
 
+    DataFormat* fileContent;
     static JsonHandle* _ptr;
 
 };

@@ -18,8 +18,9 @@ protected:
 signals:
     void sendTouchingLabel(DragLabel*);
     void sendTouchEnd();
+    void sendDeleteLabel(DragLabel*);
 public slots:
-   // void removeFromParent();
+    void removeFromParent();
     void bringToTop();
 private:
     QPoint previousPos;

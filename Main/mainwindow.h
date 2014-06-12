@@ -43,6 +43,7 @@ public slots:
      void createEditorWidget(DialogMsg* msg);
      void exportFileHandle();
      void importFileHandle();
+     void editorClose();
 private:
     QToolBar *_toolbar;
     QVector<QMenu*> _menus;
@@ -60,6 +61,7 @@ private:
     QAction *_createFile;
     QAction *_exportFile;
     QAction *_importFile;
+    QAction *_editorClose;
     QTimer* _timer;
     CreateFile* _createDialog;
 

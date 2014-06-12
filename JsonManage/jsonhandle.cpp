@@ -91,7 +91,7 @@ void JsonHandle::parserRuleJson(const char * fileDir)
     QString fileStr;
     fileStr = txtInput.readAll();
     //解析关卡文件
-    qDebug() << fileStr << endl;
+   // qDebug() << fileStr << endl;
     QJsonParseError json_error;
     QJsonDocument parse_doucment = QJsonDocument::fromJson(fileStr.toUtf8(), &json_error);
 
@@ -102,6 +102,9 @@ void JsonHandle::parserRuleJson(const char * fileDir)
         {
             QJsonObject obj = parse_doucment.object();
             //解析装饰物数据
+             _rows = obj.take("rows").toInt();
+             _column = obj.take("cols").toInt();//cols
+
             QJsonArray blocksArray = obj.take("rules").toArray();
 
             for (int i = 0;  i< blocksArray.size(); i++)
@@ -197,6 +200,7 @@ void JsonHandle:: createBlockIds(QString name,BlockItem* item)
 
     if(name.compare("PRRuleCommonBlock") == 0)
     {
+        qDebug() <<"PRRuleColorBombBlock size is "<<_PRRuleColorBombBlocks.size();
         for(int i = 0; i < _PRRuleCommonBlocks.size(); i++)
         {
             BlockItem  *block = _PRRuleCommonBlocks.at(i);
@@ -236,10 +240,9 @@ void JsonHandle:: createBlockIds(QString name,BlockItem* item)
         {
             BlockItem  *block = _PRRulePetBlocks.at(i);
 
-
+            //block->_rulename == item->_rulename &&
             if(block->_type == item->_type &&
                block->_matchType == item->_matchType &&
-               block->_rulename == item->_rulename &&
                block->_boxed == item->_boxed){
                 _blockIds.append(block->_blockId);
                 _exportBlocksRule.append(block);
@@ -253,7 +256,6 @@ void JsonHandle:: createBlockIds(QString name,BlockItem* item)
         for(int i = 0; i < _otherBlocks.size(); i++)
         {
             BlockItem  *block = _otherBlocks.at(i);
-             qDebug() << "_PRRulePetBlocks:" << block->_pillarName;
             if(block->_type == item->_type &&
                block->_matchType == item->_matchType)
             {
@@ -283,6 +285,9 @@ void JsonHandle::createGridIds()
 }
 QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<DragLabel*> constraintArray,int row,int column,const char *exportDir)
 {
+    _exportBlocksRule.clear(); //防止重复导出
+    _blockIds.clear();
+    _gridIds.clear();
     parserRuleJson(RuleConfigPath);
 
     for(int i = 0 ; i < blockArray.size();i++)
@@ -298,6 +303,7 @@ QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<Dra
     QJsonArray gridIdArray;
 
     QJsonArray ruleArray;
+    qDebug() << "exportBlocksRule size :" << _exportBlocksRule.size();
     for(int i = 0 ; i < _exportBlocksRule.size();i++)
     {
         QJsonObject ruleObject;
@@ -383,6 +389,17 @@ QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<Dra
 
     return jsonDocument;
 }
+DataFormat* JsonHandle::parserExistFile(const char* fileDir)
+{
+    _rules.clear();
+    parserRuleJson(fileDir);
+    fileContent = new DataFormat;
+    fileContent->_rows = _rows;
+    fileContent->_column = _column;
+    fileContent->_blocks = _rules;
+    fileContent->_constraints = parserJsonFileForconstraint(fileDir);
+    return fileContent;
+}
 
 QVector<BlockItem*> JsonHandle::parserJsonFileForBlocks(const char * fileDir)
 {
@@ -390,9 +407,9 @@ QVector<BlockItem*> JsonHandle::parserJsonFileForBlocks(const char * fileDir)
     parserRuleJson(fileDir);
     return _rules;
 }
-QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir,QWidget* parent)
+QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir)
 {
-
+        _constraints.clear();
         QFile fileLevel(fileDir);
         if(!fileLevel.open(QIODevice::ReadOnly | QIODevice::Text))
         {
@@ -411,7 +428,6 @@ QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir,
         if(json_error.error == QJsonParseError::NoError){
             if(parse_doucment.isObject())  {
 
-                //解析行列数据
                 QJsonObject obj = parse_doucment.object();
                 //解析装饰物数据
                 QJsonArray arrayConstraints = obj.take("constraintSprites").toArray();
@@ -429,7 +445,7 @@ QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir,
                     QFile file(chImageDir);
                     if (file.exists()){
                         qDebug() << " yes the file is exit" << endl;
-                        DragLabel * label = new DragLabel(parent);
+                        DragLabel * label = new DragLabel;
                         label->show();
                         char chImageDir[200];
                         sprintf(chImageDir,"%s/%s",ConstraintsBasePath,resName.toUtf8().data());

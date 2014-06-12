@@ -48,7 +48,9 @@ public:
         qDebug() << "colorbombmatchtype:" << _colorbombmatchtype;
         qDebug()<<"type: " << _type;
         qDebug()<<"multiplier: " << _multiplier;
+        qDebug() << "boxed:" << _boxed;
         qDebug()<< "blockId: " << _blockId;
+        qDebug()<< "resource: " << _resource;
         //qDebug()<<"frozenLevel: " <<_frozenLevel << endl;
     }
 
