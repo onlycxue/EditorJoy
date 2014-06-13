@@ -7,6 +7,12 @@ EditorWidget::EditorWidget(DataFormat* data):_row(data->_rows),_column(data->_co
     blocksInit();
     this->setMouseTracking(true);
     actionInit();
+//    _levelTarget = new TargetData;
+//    _levelTarget->petNum =2;
+//    _levelTarget->star1Score = 1000;
+//    _levelTarget->star2Score = 2000;
+//    _levelTarget->star3Score = 3000;
+
     this->setContextMenuPolicy(Qt::DefaultContextMenu);
     for(int i = 0 ; i <data->_blocks.size();i++)
     {
@@ -44,7 +50,7 @@ void EditorWidget::editWidgetInit()
     palette.setColor(QPalette::Background, QColor(192,253,123));
     setPalette(palette);
     _blocksBoard->resize(BLOCK_WIDTH*(_column+0.2),BLOCK_HEIGHT*(_row+0.2));
-    this->resize(640,800);
+    this->resize(640,960);
     int x =(width()-BLOCK_WIDTH*(_column+0.2))/2;
     int y =(height() - BLOCK_HEIGHT*(_row+0.2))/2;
     _blocksBoard->setGeometry(x,y,_blocksBoard->width(),_blocksBoard->height());
@@ -847,35 +853,38 @@ void EditorWidget::touchingClean()
 {
     _touchingLabel = NULL;
 }
+//void EditorWidget::setLevelTatget(TargetData* data)
+//{
+//    _levelTarget->petNum = data->petNum;
+//    _levelTarget->star1Score = data->star1Score;
+//    _levelTarget->star2Score = data->star2Score;
+//    _levelTarget->star3Score = data->star3Score;
+//}
+DataFormat* EditorWidget::getExportData()
+{
+    _jsonExportData = new DataFormat;
+////    _jsonExportData->_target = _levelTarget;
+//    _jsonExportData->_column = _column;
+//    _jsonExportData->_rows = _row;
+//    _jsonExportData->_constraints = _dragLabels;
+//    //_jsonExportData->_blocks = _blocks;
+
+    return _jsonExportData;
+}
+
+void EditorWidget::setBlocksBoardImg(QString image)
+{
+
+    this->setAutoFillBackground(true);
+    QPalette palette;
+    QPixmap img(image);
+    img.scaled(640,960);
+    palette.setBrush(QPalette::Background, QBrush(img));
+    this->setPalette(palette);
+
+}
+
 EditorWidget::~EditorWidget()
 {
-//    delete _mainMenu;
-//    delete _colorMenu;
-//    delete _frozenMenu;
-//    delete _boxedMenu;
 
-//    //二级菜单颜色
-
-//    delete _colorGroup;
-//    delete _blueColor;
-//    delete _yellowColor;
-//    delete _redColor;
-//    delete _pinkColor;
-//    delete _greenColor;
-
-
-//    //铁笼等级
-//    delete _frozenGroup;
-//    delete _frozen0;
-//    delete _frozen1;
-//    delete _frozen2;
-
-//    //boxed
-//    delete _boxedGroup;
-//    delete _noBox;
-
-//    delete _multiplier;
-//    delete _addGroup;
-
-//    delete _blocksBoard;
 }

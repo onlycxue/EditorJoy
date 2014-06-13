@@ -18,7 +18,8 @@
 #include "../DialogWidget/createdialogwidget.h"
 #include "../Block/blockitem.h"
 #include "../FileManage/exportfile.h"
-
+//#include "../DialogWidget/targetdialog.h"
+#include "../DialogWidget/backgrounddialog.h"
 
 class MainWindow : public QMainWindow
 {
@@ -43,8 +44,13 @@ public slots:
      void createEditorWidget(DialogMsg* msg);
      void exportFileHandle();
      void importFileHandle();
+     void setLevelTargetDialog();
      void editorClose();
+     void setLevelTarData(TargetData* data);
+     void setLevelBackgroud(QString image);
+     //void backgroudDialogshow();
 private:
+
     QToolBar *_toolbar;
     QVector<QMenu*> _menus;
     QMenuBar *_menubar;
@@ -56,14 +62,20 @@ private:
     QHBoxLayout *_hboxLayout;
     QVBoxLayout *_vboxLayout;
     OrnamentalWidget* _ornamentalWidget;
+    BackgroudDialog* _backgroudDialog;
     QLabel *_statusBar;
     QLabel *_posStatusBar;
     QAction *_createFile;
     QAction *_exportFile;
     QAction *_importFile;
     QAction *_editorClose;
+    QAction *_levelTarget;
+    QAction *_leveBackGround;
     QTimer* _timer;
     CreateFile* _createDialog;
+
+    TargetData* _levelTargetData;
+    QString _levelBackground;
 
 };
 

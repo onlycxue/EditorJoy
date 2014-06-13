@@ -283,7 +283,8 @@ void JsonHandle::createGridIds()
         }
     }
 }
-QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<DragLabel*> constraintArray,int row,int column,const char *exportDir)
+QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<DragLabel*> constraintArray,
+                                     int row,int column,TargetData* target,QString background)
 {
     _exportBlocksRule.clear(); //防止重复导出
     _blockIds.clear();
@@ -353,7 +354,7 @@ QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<Dra
     jsonLevel.insert("rules",ruleArray);
     jsonLevel.insert("cols",column);
     jsonLevel.insert("rows",row);
-
+    jsonLevel.insert("background",background.split(".").first());
     for(int i = 0; i< _blockIds.size();i++)
     {
         blockIdArray.insert(i,QJsonValue(_blockIds.at(i)));
@@ -383,6 +384,30 @@ QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<Dra
         jsonConstraints.insert(i,jsonConstraint);
     }
     jsonLevel.insert("constraintSprites",jsonConstraints);
+    QJsonArray targetsArray;
+    if(target != NULL)
+    {
+       QJsonObject getScore;
+       getScore.insert("pillar",QString("com.king.petrescue.game.pillar.target.PRTargetScore"));
+       getScore.insert("name",QString("PRTargetScore"));
+       targetsArray.insert(0,getScore);
+
+       QJsonObject getpets;
+       getpets.insert("pillar",QString("com.king.petrescue.game.pillar.target.PRTargetPets"));
+       getpets.insert("name",QString("PRTargetPets"));
+       getpets.insert("numPets",target->petNum);
+       targetsArray.insert(1,getpets);
+
+       QJsonObject getstars;
+       getstars.insert("pillar",QString("com.king.petrescue.game.pillar.target.stars.PRTargetStars"));
+       getstars.insert("name",QString("PRTargetStars"));
+       getstars.insert("star_1",target->star1Score);
+       getstars.insert("star_2",target->star2Score);
+       getstars.insert("star_3",target->star3Score);
+       targetsArray.insert(2,getstars);
+
+    }
+    jsonLevel.insert("targets",targetsArray);
 
     jsonDocument.setObject(jsonLevel);
 

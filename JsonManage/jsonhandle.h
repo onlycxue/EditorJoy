@@ -17,11 +17,13 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include "../OrnamentalWidget/draglabel.h"
+#include "../DialogWidget/targetdialog.h"
 
 typedef struct
 {
     int _rows;
     int _column;
+//    TargetData* _target;
     QVector<BlockItem*> _blocks;
     QVector<DragLabel*> _constraints;
 
@@ -36,7 +38,8 @@ public:
     QJsonDocument exportJson(QVector<BlockLabel*> blockArray,
                              QVector<DragLabel*> constraintArray,
                              int row,int column,
-                             const char *exportDir);
+                             TargetData* target,
+                             QString background);
     QVector<BlockItem*> parserJsonFileForBlocks(const char * fileDir);
     QVector<DragLabel*> parserJsonFileForconstraint(const char* fileDir);
 

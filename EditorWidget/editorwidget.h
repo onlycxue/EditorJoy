@@ -12,6 +12,7 @@
 #include "../Global/globaldef.h"
 #include <QActionGroup>
 #include "../JsonManage/jsonhandle.h"
+//#include "../DialogWidget/targetdialog.h"
 
 #define BLOCK_WIDTH 70
 #define BLOCK_HEIGHT 70
@@ -37,11 +38,13 @@ public:
     int getColumn();
     QVector<BlockLabel*> getBlocks();
     QVector<DragLabel*> getConstraints();
+    DataFormat* getExportData();
     void editWidgetInit();
     void blocksInit();
     float getMouseX();
     float getMouseY();
     void actionInit();
+    void setBlocksBoardImg(QString image);
     void setActionStatus();
     void setColorActionStatus(int type);
     void setBoxColorActionStatus(int type,bool flag);
@@ -73,6 +76,7 @@ public slots:
     void touchingLabel(DragLabel* label);
     void touchingClean();
     void deleteDragLabel(DragLabel* item);
+//    void setLevelTatget(TargetData* data);
 private:
     int _row;
     int _column;
@@ -81,6 +85,8 @@ private:
     QVector<BlockLabel*> _blocks;
     QVector<DragLabel*> _dragLabels;
     DragLabel* _touchingLabel;
+//    TargetData* _levelTarget;
+    DataFormat* _jsonExportData;
     int _selectedNum;
     QGridLayout* _gridLayout;
     float _mouseX;

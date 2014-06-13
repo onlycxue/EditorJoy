@@ -1,14 +1,19 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent),_levelTargetData(NULL)
 {
     resize(1100,600);
     uiInit();
+
+
 }
 
 void MainWindow::uiInit()
 {
+
+    _backgroudDialog = new BackgroudDialog(this);
+    connect(_backgroudDialog,SIGNAL(backgroundName(QString)),this,SLOT(setLevelBackgroud(QString)));
 
     menubarInit();
     toolbarInit();
@@ -25,7 +30,8 @@ void MainWindow::uiInit()
 
 //    BlockItemArray _array = JsonHandle::getInstance()->parserRuleJson(RuleConfigPath);
 //    qDebug() << "_arraySize is " << _array.size() << endl;
-
+/*      _backgroudDialog = new BackgroudDialog(this);
+      connect(_backgroudDialog,SIGNAL(backgroundName(QString)),this,SLOT(setLevelBackgroud(QString)))*/;
 }
 
 void MainWindow::menubarInit()
@@ -51,15 +57,29 @@ void MainWindow::menubarInit()
 
     _editorClose = new QAction("关闭",this);
     filemenu->addAction(_editorClose);
-    connect(_editorClose,SIGNAL(triggered()),this,SLOT(editorClose()));
-
+    connect(_editorClose,SIGNAL(triggered()),this,SLOT(editorClose()));  
     _menus.append(filemenu);
+
+    QMenu* setmenu = new QMenu(_menubar);
+    setmenu->setObjectName(QStringLiteral("menu"));
+    setmenu->setTitle("设置");
+    _menubar->addMenu(setmenu);
+    _menus.append(setmenu);
+    _levelTarget = new QAction("关卡目标",this);
+    setmenu->addAction(_levelTarget);
+    connect(_levelTarget,SIGNAL(triggered()),this,SLOT(setLevelTargetDialog()));
+    _leveBackGround = new QAction("关卡背景",this);
+    connect(_leveBackGround,SIGNAL(triggered()),_backgroudDialog,SLOT(show()));
+    setmenu->addAction(_leveBackGround);
+
 
     QMenu* helpmenu = new QMenu(_menubar);
     helpmenu->setObjectName(QStringLiteral("menu"));
     helpmenu->setTitle("帮助");
     _menubar->addMenu(helpmenu);
     _menus.append(helpmenu);
+
+
 
 }
 void MainWindow::toolbarInit()
@@ -172,7 +192,7 @@ void MainWindow::exportFileHandle()
     {
          _editorWidget->exportBlocksMsg();
       QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
-                                              _editorWidget->getRow(),_editorWidget->getColumn(),"");
+                                              _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
       new ExportFile(document,this);
     }
 }
@@ -197,6 +217,25 @@ void MainWindow::editorClose()
     delete _editorWidget;
 
     _editorWidget = NULL;
+}
+void MainWindow::setLevelTargetDialog()
+{
+    TargetDialog* dialog = new TargetDialog(this);
+    connect(dialog,SIGNAL(Clicked(TargetData*)),this,SLOT(setLevelTarData(TargetData*)));
+    dialog->show();
+}
+void MainWindow::setLevelTarData(TargetData* data)
+{
+    _levelTargetData = data;
+}
+
+void MainWindow::setLevelBackgroud(QString image)
+{
+    char fileName[200];
+    sprintf(fileName,"%s/%s",BackGroundBasePath,image.toUtf8().data());
+    qDebug() <<"Board image is " <<fileName;
+    _levelBackground = image;
+    _editorWidget->setBlocksBoardImg(fileName);
 }
 
 MainWindow::~MainWindow()
