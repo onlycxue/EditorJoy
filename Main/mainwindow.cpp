@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),_levelTargetData(NULL)
+    : QMainWindow(parent),_levelTargetData(NULL),_levelBackground(QString::null)
 {
     resize(1100,600);
     uiInit();
@@ -15,6 +15,8 @@ void MainWindow::uiInit()
     _statementDialog = new Statement(this);
     _backgroudDialog = new BackgroudDialog(this);
     connect(_backgroudDialog,SIGNAL(backgroundName(QString)),this,SLOT(setLevelBackgroud(QString)));
+    _targetDialog = new TargetDialog(this);
+    connect(_targetDialog,SIGNAL(Clicked(TargetData*)),this,SLOT(setLevelTarData(TargetData*)));
 
     menubarInit();
     toolbarInit();
@@ -68,7 +70,8 @@ void MainWindow::menubarInit()
     _menus.append(setmenu);
     _levelTarget = new QAction(QIcon(levelTargetIcon),"关卡目标",this);
     setmenu->addAction(_levelTarget);
-    connect(_levelTarget,SIGNAL(triggered()),this,SLOT(setLevelTargetDialog()));
+
+    connect(_levelTarget,SIGNAL(triggered()),_targetDialog,SLOT(show()));
     _leveBackGround = new QAction(QIcon(levelBackgroundIcon),"关卡背景",this);
     connect(_leveBackGround,SIGNAL(triggered()),_backgroudDialog,SLOT(show()));
     setmenu->addAction(_leveBackGround);
@@ -194,7 +197,8 @@ void MainWindow::showCreateDialog()
 
 void MainWindow::createEditorWidget(DialogMsg* msg)
 {
-    if(0 < msg->_columns&&msg->_columns <= 9 && 0 < msg->_rows&&msg->_rows <= 12)
+
+    if(0 < msg->_columns&&msg->_columns <= 9 && 5 < msg->_rows&&msg->_rows <= 12)
     {
         _editorWidget = new EditorWidget(msg->_rows,msg->_columns);
         _editorArea->setWidget(_editorWidget);
@@ -208,7 +212,7 @@ void MainWindow::createEditorWidget(DialogMsg* msg)
     {
 
         int ret = QMessageBox::warning(this, tr("warn"),
-                                       tr(" 0 < row 13 and  0 < colum < 9"),
+                                       tr(" 5 < row 13 and  0 < colum <= 9"),
                                           QMessageBox::Ok);
     }
 }
@@ -216,10 +220,27 @@ void MainWindow::exportFileHandle()
 {
     if(_editorWidget != NULL)
     {
-         _editorWidget->exportBlocksMsg();
-      QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
-                                              _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
-      new ExportFile(document,this);
+        if(_levelTargetData == NULL || _levelBackground == QString::null)
+        {
+            int ret = QMessageBox::warning(this, tr("warn"),
+                                           tr("请先确保关卡目标或关卡背景已经设置！"),
+                                              QMessageBox::Ok);
+        }
+        else
+        {
+           _editorWidget->exportBlocksMsg();
+          QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
+                                                  _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
+          new ExportFile(document,this);
+          _levelTargetData == NULL;
+          _levelBackground == QString::null;
+        }
+    }
+    else
+    {
+        int ret = QMessageBox::warning(this, tr("warn"),
+                                       tr("请先创建关卡文件"),
+                                          QMessageBox::Ok);
     }
 }
 void MainWindow::importFileHandle()
@@ -246,13 +267,21 @@ void MainWindow::editorClose()
 }
 void MainWindow::setLevelTargetDialog()
 {
-    TargetDialog* dialog = new TargetDialog(this);
-    connect(dialog,SIGNAL(Clicked(TargetData*)),this,SLOT(setLevelTarData(TargetData*)));
-    dialog->show();
+
 }
 void MainWindow::setLevelTarData(TargetData* data)
 {
-    _levelTargetData = data;
+    if(_editorWidget != NULL)
+    {
+        _levelTargetData = data;
+    }
+    else
+    {
+        int ret = QMessageBox::warning(this, tr("warn"),
+                                       tr("请先创建关卡文件"),
+                                          QMessageBox::Ok);
+        _targetDialog->hide();
+    }
 }
 
 void MainWindow::setLevelBackgroud(QString image)
@@ -264,6 +293,13 @@ void MainWindow::setLevelBackgroud(QString image)
         qDebug() <<"Board image is " <<fileName;
         _levelBackground = image;
         _editorWidget->setBlocksBoardImg(fileName);
+    }
+    else
+    {
+        int ret = QMessageBox::warning(this, tr("warn"),
+                                       tr("请先创建关卡文件"),
+                                          QMessageBox::Ok);
+        _backgroudDialog->hide();
     }
 
 }

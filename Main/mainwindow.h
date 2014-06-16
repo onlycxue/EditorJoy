@@ -82,6 +82,7 @@ private:
 
     Statement* _statementDialog;
 
+    TargetDialog* _targetDialog;
 };
 
 #endif // MAINWINDOW_H

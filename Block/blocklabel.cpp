@@ -26,17 +26,18 @@ BlockLabel::BlockLabel(QWidget *parent ):
     _thirdImagLabel->setMaximumSize(70,70);
     _thirdImagLabel->setMinimumSize(70,70);
 //    propertyInit();
-//    QPixmap pixmap(BlueBlock);
-//    pixmap.scaled(70,70,Qt::KeepAspectRatio);
-//    this->setScaledContents(true);
-//    this->setPixmap(pixmap);
+    QPixmap pixmap(BlueBlock);
+    pixmap.scaled(70,70,Qt::KeepAspectRatio);
+    this->setScaledContents(true);
+    this->setPixmap(pixmap);
+
 }
 
 void BlockLabel::propertyInit()
 {
     _propertys = new BlockItem;
     _propertys->_pillar = "";
-    _propertys->_pillarName = "";
+    _propertys->_pillarName = "PRRuleCommonBlock";
     _propertys->_frozen =false;
     _propertys->_frozenLevel = 1;
     _propertys->_matchType = 0;
