@@ -1,6 +1,7 @@
 #include "targetdialog.h"
 
-TargetDialog::TargetDialog(QWidget* parent)
+TargetDialog::TargetDialog(QWidget* parent):
+    QDialog(parent)
 {
     data = new TargetData;
     data->petNum = 0;

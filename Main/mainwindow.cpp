@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),_levelTargetData(NULL)
+    : QMainWindow(parent),_levelTargetData(NULL),_levelBackground(QString::null)
 {
     resize(1100,600);
     uiInit();
@@ -12,8 +12,11 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::uiInit()
 {
 
+    _statementDialog = new Statement(this);
     _backgroudDialog = new BackgroudDialog(this);
     connect(_backgroudDialog,SIGNAL(backgroundName(QString)),this,SLOT(setLevelBackgroud(QString)));
+    _targetDialog = new TargetDialog(this);
+    connect(_targetDialog,SIGNAL(Clicked(TargetData*)),this,SLOT(setLevelTarData(TargetData*)));
 
     menubarInit();
     toolbarInit();
@@ -45,17 +48,17 @@ void MainWindow::menubarInit()
     filemenu->setTitle("文件");
     _menubar->addMenu(filemenu);
 
-    _createFile = new QAction("新建...",this);
+    _createFile = new QAction(QIcon(newFileIcon),"新建...",this);
     filemenu->addAction(_createFile);
     connect(_createFile,SIGNAL(triggered()),this,SLOT(showCreateDialog()));
-    _exportFile = new QAction("导出...",this);
+    _exportFile = new QAction(QIcon(exportfileIcon),"导出...",this);
     filemenu->addAction(_exportFile);  
     connect(_exportFile,SIGNAL(triggered()),this,SLOT(exportFileHandle()));
-    _importFile = new QAction("导入...",this);
+    _importFile = new QAction(QIcon(importFileIcon),"导入...",this);
     filemenu->addAction(_importFile);
     connect(_importFile,SIGNAL(triggered()),this,SLOT(importFileHandle()));
 
-    _editorClose = new QAction("关闭",this);
+    _editorClose = new QAction(QIcon(exitFileIcon),"关闭",this);
     filemenu->addAction(_editorClose);
     connect(_editorClose,SIGNAL(triggered()),this,SLOT(editorClose()));  
     _menus.append(filemenu);
@@ -65,10 +68,10 @@ void MainWindow::menubarInit()
     setmenu->setTitle("设置");
     _menubar->addMenu(setmenu);
     _menus.append(setmenu);
-    _levelTarget = new QAction("关卡目标",this);
+    _levelTarget = new QAction(QIcon(levelTargetIcon),"关卡目标",this);
     setmenu->addAction(_levelTarget);
-    connect(_levelTarget,SIGNAL(triggered()),this,SLOT(setLevelTargetDialog()));
-    _leveBackGround = new QAction("关卡背景",this);
+    connect(_levelTarget,SIGNAL(triggered()),_targetDialog,SLOT(show()));
+    _leveBackGround = new QAction(QIcon(levelBackgroundIcon),"关卡背景",this);
     connect(_leveBackGround,SIGNAL(triggered()),_backgroudDialog,SLOT(show()));
     setmenu->addAction(_leveBackGround);
 
@@ -76,6 +79,9 @@ void MainWindow::menubarInit()
     QMenu* helpmenu = new QMenu(_menubar);
     helpmenu->setObjectName(QStringLiteral("menu"));
     helpmenu->setTitle("帮助");
+    _statement = new QAction("关于",this);
+    helpmenu->addAction(_statement);
+    connect(_statement,SIGNAL(triggered()),_statementDialog,SLOT(show()));
     _menubar->addMenu(helpmenu);
     _menus.append(helpmenu);
 
@@ -88,15 +94,26 @@ void MainWindow::toolbarInit()
     _toolbar->setObjectName(QStringLiteral("mainToolBar"));
     this->addToolBar(Qt::TopToolBarArea, _toolbar);
 
-    QAction *newFile = new QAction(QIcon(":/images/Blocks/animal_pig.png"),
+    QAction *newFile = new QAction(QIcon(newFileIcon),
                                         "&New",this);
+    connect(newFile,SIGNAL(triggered()),this,SLOT(showCreateDialog()));
     newFile->setStatusTip("新建文件");
     _toolbar->addAction(newFile);
 
-
-    QAction *exportFile = new QAction(QIcon(":/images/Blocks/animal_cat.png"),
+    QAction *exportFile = new QAction(QIcon(exportfileIcon),
                                         "&export",this);
     _toolbar->addAction(exportFile);
+    connect(exportFile,SIGNAL(triggered()),this,SLOT(exportFileHandle()));
+
+    QAction *importFile = new QAction(QIcon(importFileIcon),
+                                        "&import",this);
+    _toolbar->addAction(importFile);
+    connect(importFile,SIGNAL(triggered()),this,SLOT(importFileHandle()));
+
+    QAction *exitFile= new QAction(QIcon(exitFileIcon),
+                                        "&exit",this);
+    _toolbar->addAction(exitFile);
+    connect(exitFile,SIGNAL(triggered()),this,SLOT(editorClose()));
 }
 void MainWindow::editorWidgetInit()
 {
@@ -179,21 +196,49 @@ void MainWindow::showCreateDialog()
 
 void MainWindow::createEditorWidget(DialogMsg* msg)
 {
-    _editorWidget = new EditorWidget(msg->_rows,msg->_columns);
-    _editorArea->setWidget(_editorWidget);
-    connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
-    connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
-    delete msg;
-    _timer->start();
+    if(0 < msg->_columns&&msg->_columns <= 9 && 5 < msg->_rows&&msg->_rows <= 12)
+    {
+        _editorWidget = new EditorWidget(msg->_rows,msg->_columns);
+        _editorArea->setWidget(_editorWidget);
+        connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
+        connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
+        delete msg;
+        _timer->start();
+        _createDialog->close();
+    }
+    else
+    {
+
+        int ret = QMessageBox::warning(this, tr("warn"),
+                                       tr(" 5 < row 13 and  0 < colum <= 9"),
+                                          QMessageBox::Ok);
+    }
 }
 void MainWindow::exportFileHandle()
 {
     if(_editorWidget != NULL)
     {
-         _editorWidget->exportBlocksMsg();
-      QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
-                                              _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
-      new ExportFile(document,this);
+        if(_levelTargetData == NULL || _levelBackground == QString::null)
+        {
+            int ret = QMessageBox::warning(this, tr("warn"),
+                                           tr("请先确保关卡目标或关卡背景已经设置！"),
+                                              QMessageBox::Ok);
+        }
+        else
+        {
+           _editorWidget->exportBlocksMsg();
+          QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
+                                                  _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
+          new ExportFile(document,this);
+          _levelTargetData == NULL;
+          _levelBackground == QString::null;
+        }
+    }
+    else
+    {
+        int ret = QMessageBox::warning(this, tr("warn"),
+                                       tr("请先创建关卡文件"),
+                                          QMessageBox::Ok);
     }
 }
 void MainWindow::importFileHandle()
@@ -220,22 +265,41 @@ void MainWindow::editorClose()
 }
 void MainWindow::setLevelTargetDialog()
 {
-    TargetDialog* dialog = new TargetDialog(this);
-    connect(dialog,SIGNAL(Clicked(TargetData*)),this,SLOT(setLevelTarData(TargetData*)));
-    dialog->show();
+
 }
 void MainWindow::setLevelTarData(TargetData* data)
 {
-    _levelTargetData = data;
+    if(_editorWidget != NULL)
+    {
+        _levelTargetData = data;
+    }
+    else
+    {
+        int ret = QMessageBox::warning(this, tr("warn"),
+                                       tr("请先创建关卡文件"),
+                                          QMessageBox::Ok);
+        _targetDialog->hide();
+    }
 }
 
 void MainWindow::setLevelBackgroud(QString image)
 {
-    char fileName[200];
-    sprintf(fileName,"%s/%s",BackGroundBasePath,image.toUtf8().data());
-    qDebug() <<"Board image is " <<fileName;
-    _levelBackground = image;
-    _editorWidget->setBlocksBoardImg(fileName);
+    if(_editorWidget != NULL)
+    {
+        char fileName[200];
+        sprintf(fileName,"%s/%s",BackGroundBasePath,image.toUtf8().data());
+        qDebug() <<"Board image is " <<fileName;
+        _levelBackground = image;
+        _editorWidget->setBlocksBoardImg(fileName);
+    }
+    else
+    {
+        int ret = QMessageBox::warning(this, tr("warn"),
+                                       tr("请先创建关卡文件"),
+                                          QMessageBox::Ok);
+        _backgroudDialog->hide();
+    }
+
 }
 
 MainWindow::~MainWindow()

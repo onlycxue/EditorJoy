@@ -29,6 +29,7 @@ void CreateFile::init()
 
     _cancelButton = new QPushButton(this);
     _cancelButton->setText("取消");
+    connect(_cancelButton,SIGNAL(clicked()),this,SLOT(close()));
     hbuttonLayout->addWidget(_entryButton);
     hbuttonLayout->addWidget(_cancelButton);
 
@@ -43,17 +44,17 @@ void CreateFile::entryHandle()
 {
     int rows = _rowEdit->text().toInt();
     int columns = _columnEdit->text().toInt();
-    if((0< rows && rows < 20)&&(0 < columns && columns < 20))
-    {
+//    if((0< rows && rows < 20)&&(0 < columns && columns < 20))
+//    {
        DialogMsg* msg = new DialogMsg;
        msg->_columns = columns;
        msg->_rows = rows;
        emit sendMsg(msg);
-       this->deleteLater();
-    }
-    else
-    {
-        //打印错误信息
-    }
+////       this->deleteLater();
+//    }
+//    else
+//    {
+//        //打印错误信息
+//    }
 
 }

@@ -1,6 +1,7 @@
 #include "backgrounddialog.h"
 
-BackgroudDialog::BackgroudDialog(QWidget* parent)
+BackgroudDialog::BackgroudDialog(QWidget* parent):
+    QDialog(parent)
 {
     init();
 }

@@ -394,13 +394,13 @@ QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<Dra
 
        QJsonObject getpets;
        getpets.insert("pillar",QString("com.king.petrescue.game.pillar.target.PRTargetPets"));
-       getpets.insert("name",QString("PRTargetPets"));
+       getpets.insert("pillarName",QString("PRTargetPets"));
        getpets.insert("numPets",target->petNum);
        targetsArray.insert(1,getpets);
 
        QJsonObject getstars;
        getstars.insert("pillar",QString("com.king.petrescue.game.pillar.target.stars.PRTargetStars"));
-       getstars.insert("name",QString("PRTargetStars"));
+       getstars.insert("pillarName",QString("PRTargetStars"));
        getstars.insert("star_1",target->star1Score);
        getstars.insert("star_2",target->star2Score);
        getstars.insert("star_3",target->star3Score);
