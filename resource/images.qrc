@@ -236,5 +236,12 @@
         <file>images/PopUps/popup_11.png</file>
         <file>images/PopUps/popup_12.png</file>
         <file>images/PopUps/popup_13.png</file>
+        <file>images/PopUps/random.png</file>
+        <file>images/icon/exit.png</file>
+        <file>images/icon/exportfile.png</file>
+        <file>images/icon/importfile.png</file>
+        <file>images/icon/newfile.png</file>
+        <file>images/icon/set.png</file>
+        <file>images/icon/target.png</file>
     </qresource>
 </RCC>

@@ -11,6 +11,7 @@
 #include <QAction>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include "../Global/globaldef.h"
 
 class BlockLabel : public QLabel
 {

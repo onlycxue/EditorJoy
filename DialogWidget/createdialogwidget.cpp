@@ -29,6 +29,7 @@ void CreateFile::init()
 
     _cancelButton = new QPushButton(this);
     _cancelButton->setText("取消");
+    connect(_cancelButton,SIGNAL(clicked()),this,SLOT(close()));
     hbuttonLayout->addWidget(_entryButton);
     hbuttonLayout->addWidget(_cancelButton);
 
@@ -49,7 +50,7 @@ void CreateFile::entryHandle()
        msg->_columns = columns;
        msg->_rows = rows;
        emit sendMsg(msg);
-       this->deleteLater();
+//       this->deleteLater();
     }
     else
     {

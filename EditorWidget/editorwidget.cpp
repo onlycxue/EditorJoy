@@ -66,14 +66,15 @@ void EditorWidget::blocksInit()
             BlockLabel* block = new BlockLabel(_blocksBoard);
             //block->installEventFilter(this);
             block->setAttribute(Qt::WA_TransparentForMouseEvents);
-            QString rowStr;
-            QString columnStr;
-            rowStr.setNum(i);
-            columnStr.setNum(j);
-            //block->setText("( "+rowStr+","+ columnStr + " )");
-            block->setText("( "+columnStr+","+ rowStr + " )");
-            block->setAlignment(Qt::AlignCenter);
+//            QString rowStr;
+//            QString columnStr;
+//            rowStr.setNum(i);
+//            columnStr.setNum(j);
+//            //block->setText("( "+rowStr+","+ columnStr + " )");
+//            block->setText("( "+columnStr+","+ rowStr + " )");
+//            block->setAlignment(Qt::AlignCenter);
             //添加到容器
+
             _blocks.append(block);
             _gridLayout->addWidget(block,i,j);
         }

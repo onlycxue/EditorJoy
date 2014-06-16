@@ -26,7 +26,8 @@ SOURCES += \
     FileManage/exportfile.cpp \
     FileManage/importfile.cpp \
     DialogWidget/targetdialog.cpp \
-    DialogWidget/backgrounddialog.cpp
+    DialogWidget/backgrounddialog.cpp \
+    DialogWidget/statement.cpp
 HEADERS  += \
     Block/blockbutton.h \
     Block/blockitem.h \
@@ -43,8 +44,14 @@ HEADERS  += \
     FileManage/exportfile.h \
     FileManage/importfile.h \
     DialogWidget/targetdialog.h \
-    DialogWidget/backgrounddialog.h
+    DialogWidget/backgrounddialog.h \
+    DialogWidget/statement.h
 
 RESOURCES += \
     Resource/config.qrc \
     Resource/images.qrc
+
+OTHER_FILES += \
+    myRc.rc
+RC_FILE += \
+    myRc.rc

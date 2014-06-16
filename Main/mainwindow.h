@@ -20,6 +20,8 @@
 #include "../FileManage/exportfile.h"
 //#include "../DialogWidget/targetdialog.h"
 #include "../DialogWidget/backgrounddialog.h"
+#include "../DialogWidget/statement.h"
+#include <QMessageBox>
 
 class MainWindow : public QMainWindow
 {
@@ -71,11 +73,14 @@ private:
     QAction *_editorClose;
     QAction *_levelTarget;
     QAction *_leveBackGround;
+    QAction *_statement;
     QTimer* _timer;
     CreateFile* _createDialog;
 
     TargetData* _levelTargetData;
     QString _levelBackground;
+
+    Statement* _statementDialog;
 
 };
 
