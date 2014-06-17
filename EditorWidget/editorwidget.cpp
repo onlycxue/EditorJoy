@@ -50,10 +50,49 @@ void EditorWidget::editWidgetInit()
     palette.setColor(QPalette::Background, QColor(192,253,123));
     setPalette(palette);
     _blocksBoard->resize(BLOCK_WIDTH*(_column+0.2),BLOCK_HEIGHT*(_row+0.2));
-    this->resize(640,960);
+   // this->resize(640,1640);    //9行、
+    //this->resize(640,1480);      // 8 hang
+    //this->resize(640,1270);  //7 hang
+//    this->resize(640,1100);    //6hang
+    if(_row == 9)
+    {
+        this->resize(640,1640);
+    }
+    else if(_row == 8)
+    {
+        this->resize(640,1480);
+    }
+    else if(_row == 7)
+    {
+        this->resize(640,1270);
+    }
+    else if(_row == 6)
+    {
+        this->resize(640,1100);
+    }
+    else
+    {
+        this->resize(640,1280);
+    }
+
     int x =(width()-BLOCK_WIDTH*(_column+0.2))/2;
     int y =(height() - BLOCK_HEIGHT*(_row+0.2))/2;
-    _blocksBoard->setGeometry(x,y,_blocksBoard->width(),_blocksBoard->height());
+
+    int blockOffset =0;
+//    if (_column==5) {
+//        blockOffset=-70;
+//    }else if (_column==6){
+//        blockOffset=30;
+//    }else if (_column==7){
+//        blockOffset=160 ;
+//    }else if (_column==8){
+//        blockOffset=120;
+//    }else if (_column==9){
+//        blockOffset=360;
+//    }
+    //qDebug() << "############X:"<< x << "y:" << y <<"###############" <<this->size()<<endl;
+    _blocksBoard->setGeometry(x,y+blockOffset,_blocksBoard->width(),_blocksBoard->height());
+    //qDebug() << "############X:"<< x << "y:" << y <<"###############" <<_blocksBoard->size()<<endl;
 }
 void EditorWidget::blocksInit()
 {
@@ -62,7 +101,7 @@ void EditorWidget::blocksInit()
     {
         for(int j = 0; j < _column ; j++)
         {
-            qDebug() << "position is " << _row << _column << endl;
+            //qDebug() << "position is " << _row << _column << endl;
             BlockLabel* block = new BlockLabel(_blocksBoard);
             //block->installEventFilter(this);
             block->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -70,10 +109,23 @@ void EditorWidget::blocksInit()
 //            QString columnStr;
 //            rowStr.setNum(i);
 //            columnStr.setNum(j);
-//            //block->setText("( "+rowStr+","+ columnStr + " )");
+////            //block->setText("( "+rowStr+","+ columnStr + " )");
 //            block->setText("( "+columnStr+","+ rowStr + " )");
 //            block->setAlignment(Qt::AlignCenter);
             //添加到容器
+//            float blockOffset = 0;
+
+
+
+//            int yOffset = 146;
+
+
+////            int scrollHeight = MainWindow::getInstance()->widgetBlocksHeight();
+//    //        block.frame=CGRectMake(80+j*70, 560 - i*63, 70, 70);
+//            int blocksHeight = 63*(i-1)+70;
+//            int offsetHeight = 1200 - blocksHeight;
+//            block->setGeometry(QRect(blockOffset + 70*j,  offsetHeight+63*i - yOffset,70,70));
+////            block->reloadWithType();
 
             _blocks.append(block);
             _gridLayout->addWidget(block,i,j);

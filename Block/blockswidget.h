@@ -24,7 +24,6 @@ private:
     const char* _configFile;
     QGridLayout* _gridLayout;
     QLabel* _nameLabel;
-   // QGroupBox* _box;
 signals:
     void Clicked(BlockItem* );
 };

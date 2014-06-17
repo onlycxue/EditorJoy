@@ -79,9 +79,7 @@ private:
 
     TargetData* _levelTargetData;
     QString _levelBackground;
-
     Statement* _statementDialog;
-
     TargetDialog* _targetDialog;
 };
 
