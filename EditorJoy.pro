@@ -27,7 +27,12 @@ SOURCES += \
     FileManage/importfile.cpp \
     DialogWidget/targetdialog.cpp \
     DialogWidget/backgrounddialog.cpp \
-    DialogWidget/statement.cpp
+    DialogWidget/statement.cpp \
+    Block/blockBase.cpp \
+    Block/colorBombBlock.cpp \
+    Block/commonBlock.cpp \
+    Block/generalBlock.cpp \
+    Block/petBlock.cpp
 HEADERS  += \
     Block/blockbutton.h \
     Block/blockitem.h \
@@ -45,7 +50,12 @@ HEADERS  += \
     FileManage/importfile.h \
     DialogWidget/targetdialog.h \
     DialogWidget/backgrounddialog.h \
-    DialogWidget/statement.h
+    DialogWidget/statement.h \
+    Block/blockBase.h \
+    Block/colorBombBlock.h \
+    Block/commonBlock.h \
+    Block/generalBlock.h \
+    Block/petBlock.h
 
 RESOURCES += \
     Resource/config.qrc \
