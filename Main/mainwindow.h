@@ -18,10 +18,11 @@
 #include "../DialogWidget/createdialogwidget.h"
 #include "../Block/blockitem.h"
 #include "../FileManage/exportfile.h"
-//#include "../DialogWidget/targetdialog.h"
 #include "../DialogWidget/backgrounddialog.h"
 #include "../DialogWidget/statement.h"
+#include "../JsonManage/jsonprotocol.h"
 #include <QMessageBox>
+#include "../DialogWidget/blockgroupdialog.h"
 
 class MainWindow : public QMainWindow
 {
@@ -38,12 +39,12 @@ public:
     void ornametalWidgetInit();
     void layoutInit();
     void statusBarInit();
-
+    void dialogInit();
+    void jsonDataInit();
     ~MainWindow();
 public slots:
      void update();
-     void showCreateDialog();
-     void createEditorWidget(DialogMsg* msg);
+     void createEditorWidget(CreateData* msg);
      void exportFileHandle();
      void importFileHandle();
      void setLevelTargetDialog();
@@ -64,7 +65,7 @@ private:
     QHBoxLayout *_hboxLayout;
     QVBoxLayout *_vboxLayout;
     OrnamentalWidget* _ornamentalWidget;
-    BackgroudDialog* _backgroudDialog;
+
     QLabel *_statusBar;
     QLabel *_posStatusBar;
     QAction *_createFile;
@@ -75,12 +76,13 @@ private:
     QAction *_leveBackGround;
     QAction *_statement;
     QTimer* _timer;
-    CreateFile* _createDialog;
 
-    TargetData* _levelTargetData;
-    QString _levelBackground;
+    BackgroudDialog* _backgroudDialog;
+    CreateFile* _createDialog;
     Statement* _statementDialog;
     TargetDialog* _targetDialog;
+    BlockGroupDialog* _groupDialog;
+    JsonProtocol* _jsonData;
 };
 
 #endif // MAINWINDOW_H

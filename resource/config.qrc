@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>config/config.json</file>
         <file>config/rules.json</file>
+        <file>config/group.json</file>
     </qresource>
 </RCC>

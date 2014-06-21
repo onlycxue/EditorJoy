@@ -7,8 +7,8 @@ class CommonBlock : public GeneralBlock
 public:
     CommonBlock();
     CommonBlock(CommonBlock &other);
-    CommonBlock& operator =(CommonBlock &other);
-    bool operator ==(CommonBlock &other);
+    BlockBase& operator =(BlockBase &other);
+    bool operator ==(BlockBase &other);
     void setFrozenable(bool flag);
     bool getFrozenable();
     void setFrozenLevel(int level);
@@ -16,6 +16,7 @@ public:
     void setMultipliper(int level);
     int getMultipliper();
     virtual QJsonObject exportJsonObject();
+    virtual void printInfo();
 private:
     bool _frozen;
     int _frozenLevel;

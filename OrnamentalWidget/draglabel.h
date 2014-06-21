@@ -3,13 +3,16 @@
 
 #include <QLabel>
 #include <QMouseEvent>
+#include <QJsonObject>
+#include "../Global/globaldef.h"
 
 class DragLabel : public QLabel
 {
     Q_OBJECT
 public:
     explicit DragLabel(QWidget *parent = 0);
-
+     QJsonObject exportJsonObject();
+     void setImage(QString file);
 protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent *event);
@@ -25,6 +28,7 @@ public slots:
 private:
     QPoint previousPos;
     bool bIsTouching;
+    QString _imageName;
 
     QAction * Act_Delete;
 public:

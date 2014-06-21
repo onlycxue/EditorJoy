@@ -10,6 +10,9 @@
 #include "blockbutton.h"
 #include <QLabel>
 #include <QGroupBox>
+#include "commonBlock.h"
+#include "generalBlock.h"
+#include "../Block/generalBlock.h"
 //用来显示所有block控件
 class BlocksWidget:public QWidget
 {
@@ -19,13 +22,13 @@ public:
 //    bool readBlockConfig(const char* configFile);
     void blocksInit();
 private:
-    BlockItemArray _items;
+    QVector<GeneralBlock*> _items;
     QVector<BlockLabel*> _blocks;
     const char* _configFile;
     QGridLayout* _gridLayout;
     QLabel* _nameLabel;
 signals:
-    void Clicked(BlockItem* );
+    void Clicked(GeneralBlock* );
 };
 
 #endif // BLOCKSWIDGET_H

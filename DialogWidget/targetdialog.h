@@ -8,13 +8,7 @@
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-
-typedef struct{
-   int petNum;
-   int star1Score;
-   int star2Score;
-   int star3Score;
-} TargetData;
+#include "targetdata.h"
 
 class TargetDialog : public QDialog
 {
@@ -22,6 +16,7 @@ class TargetDialog : public QDialog
 public:
     TargetDialog(QWidget* parent = 0);
     void init();
+    void setCurrentData(TargetData* data);
 signals:
     void Clicked(TargetData*);
 public slots:
@@ -40,7 +35,7 @@ private:
     QLabel* _star3Label;
     QLineEdit* _star3LineEdit;
 
-    TargetData* data;
+    TargetData* _data;
 
 
 };

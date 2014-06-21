@@ -7,11 +7,12 @@ class PetBlock:public GeneralBlock
 public:
     PetBlock();
     PetBlock(PetBlock& other);
-    bool operator ==(PetBlock& other);
-    PetBlock operator=(PetBlock& other);
+    bool operator ==(BlockBase& other);
+    BlockBase& operator=(BlockBase& other);
     void setBoxedable(bool flag);
     bool getBoxedable();
     virtual QJsonObject exportJsonObject();
+    virtual void printInfo();
 private:
     bool _boxed;
 };

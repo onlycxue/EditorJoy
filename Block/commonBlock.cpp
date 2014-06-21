@@ -14,26 +14,27 @@ CommonBlock::CommonBlock(CommonBlock &other)
     _frozenLevel = other._frozenLevel ;
     _multiplier = other._multiplier;
 }
-CommonBlock& CommonBlock::operator =(CommonBlock &other)
+BlockBase& CommonBlock::operator =(BlockBase &other)
 {
-    _pillarName = other._pillarName ;
-    _pillar = other._pillar ;
-    _type = other._type ;
-    _matchType = other._matchType ;
-    _frozen = other._frozen ;
-    _frozenLevel = other._frozenLevel ;
-    _multiplier = other._multiplier;
+    CommonBlock& common = (CommonBlock&)other;
+    _pillarName = common._pillarName ;
+    _pillar = common._pillar ;
+    _type = common._type ;
+    _matchType = common._matchType ;
+    _frozen = common._frozen ;
+    _frozenLevel = common._frozenLevel ;
+    _multiplier = common._multiplier;
     return *this;
 }
-bool CommonBlock::operator ==(CommonBlock &other)
+bool CommonBlock::operator ==(BlockBase &other)
 {
-    return (_pillarName == other._pillarName &&
-            _pillar == other._pillar &&
-            _type == other._type &&
-            _matchType == other._matchType &&
-            _frozen == other._frozen &&
-            _frozenLevel == other._frozenLevel &&
-            _multiplier == other._multiplier);
+    CommonBlock& common = (CommonBlock&)other;
+    return (_pillarName == common._pillarName &&
+            _type == common._type &&
+            _matchType == common._matchType &&
+            _frozen == common._frozen &&
+            _frozenLevel == common._frozenLevel &&
+            _multiplier == common._multiplier);
 }
 void CommonBlock::setFrozenable(bool flag)
 {
@@ -69,5 +70,19 @@ QJsonObject CommonBlock::exportJsonObject()
     object.insert("frozen",_frozen);
     object.insert("frozenLevel",_frozenLevel);
     object.insert("multiplier",_multiplier);
+    object.insert("blockId",_blockId);
     return object;
+}
+
+void CommonBlock::printInfo()
+{
+    qDebug() << "{";
+    qDebug() << _pillar ;
+    qDebug() << _pillarName;
+    qDebug() << _type;
+    qDebug() << _matchType;
+    qDebug() << _frozen;
+    qDebug() << _frozenLevel;
+    qDebug() << _multiplier;
+    qDebug() << "}";
 }

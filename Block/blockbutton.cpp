@@ -1,13 +1,11 @@
 #include "blockbutton.h"
 
-BlockButton::BlockButton(BlockItem *item,QWidget* parent):
+BlockButton::BlockButton(GeneralBlock *item,QWidget* parent):
     QPushButton(parent),_propertys(item)
 {
     this->setMinimumSize(QSize(70,70));
     setIconSize(QSize(70,70));
-    setIcon(QIcon(item->_resource));
-    //this->setFlat(true);
-    //qDebug() << "#######blockButton#######" << _propertys->_type<< endl;
+    setIcon(QIcon(item->getResource()));
 }
 
 void BlockButton::mousePressEvent(QMouseEvent *event)

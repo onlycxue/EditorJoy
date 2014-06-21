@@ -1,13 +1,13 @@
 #include "blocklabel.h"
 
-BlockLabel::BlockLabel(BlockItem *item,QWidget *parent):
-    QLabel(parent),_propertys(item)
+BlockLabel::BlockLabel(GeneralBlock *item,QWidget *parent):
+    QLabel(parent)
 {
-    //this->resize(70,70);
-    qDebug() <<"resource : "<<_propertys->_resource << endl;
-    QPixmap pixmap(item->_resource);
+
+    QPixmap pixmap(item->getResource());
     this->setScaledContents(true);
     this->setPixmap(pixmap);
+    _propertys=item;
    // this->setMouseTracking(true);
 
 }
@@ -35,32 +35,20 @@ BlockLabel::BlockLabel(QWidget *parent ):
 
 void BlockLabel::propertyInit()
 {
-    _propertys = new BlockItem;
-    _propertys->_pillar = "";
-    _propertys->_pillarName = "PRRuleCommonBlock";
-    _propertys->_frozen =false;
-    _propertys->_frozenLevel = 1;
-    _propertys->_matchType = 0;
-    _propertys->_multiplier = 0;
-    _propertys->_type = 0;
-    _propertys->_boxed = false;
-    _propertys->_randomizedColor = false;
-    _propertys->_resource = "popup_7.png";
+      _propertys = new CommonBlock;
+      CommonBlock* commonBlock = (CommonBlock*)_propertys;
+      commonBlock->setPillarName("PRRuleCommonBlock");
+      commonBlock->setFrozenable(false);
+      commonBlock->setFrozenLevel(1);
+      commonBlock->setResource("popup_7.png");
+      commonBlock->setMatchType(0);
+      commonBlock->setMultipliper(0);
+      commonBlock->setType(0);
 
 }
-void BlockLabel::setProperty(BlockItem* item)
+void BlockLabel::setProperty(GeneralBlock* item)
 {
-    _propertys->_pillar = item->_pillar;
-    _propertys->_pillarName = item->_pillarName;
-    _propertys->_frozen = item->_frozen;
-    _propertys->_frozenLevel = item->_frozenLevel;
-    _propertys->_matchType = item->_matchType;
-    _propertys->_multiplier = item->_multiplier;
-    _propertys->_type = item->_type;
-    _propertys->_randomizedColor = item->_randomizedColor;
-    _propertys->_colorbombmatchtype = item->_colorbombmatchtype;
-    _propertys->_boxed = item->_boxed;
-    _propertys->_resource = item->_resource;
+    _propertys=item;
 
 }
 void BlockLabel::setFocusColor(QColor color)
@@ -83,7 +71,7 @@ void BlockLabel::setSelect(bool flag)
     }
 
 }
-BlockItem* BlockLabel::getPropertys()
+GeneralBlock* BlockLabel::getPropertys()
 {
     return _propertys;
 }

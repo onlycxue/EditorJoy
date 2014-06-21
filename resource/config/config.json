@@ -38,12 +38,6 @@
             "resource": "popup_3.png"
         },
         {
-            "pillarName": "0",
-            "type": -1,
-            "matchType": 0,
-            "resource": "0"
-        },
-        {
             "pillarName": "PRRuleColorBombBlock",
             "type": 7,
             "matchType": 0,

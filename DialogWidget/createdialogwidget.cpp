@@ -3,6 +3,7 @@
 CreateFile::CreateFile(QWidget* parent):
     QDialog(parent)
 {
+     _msg = new CreateData;
     init();
 
 }
@@ -22,6 +23,34 @@ void CreateFile::init()
     hcolumnLayout->addWidget(_columnLabel);
     hcolumnLayout->addWidget(_columnEdit);
 
+    QHBoxLayout* hlayout = new QHBoxLayout;
+
+    _backgroundLabel = new QLabel(this);
+    _backgroundLabel->setText("背景:");
+
+    QString nameStr = "park1.png,park2.png,park3.png,park4.png,park5.png,park6.png";
+    QStringList nameList = nameStr.split(",");
+
+    _names = new QComboBox(this);
+    _names->addItems(nameList);
+    connect(_names,SIGNAL(activated(QString)),this,SLOT(changeImage(QString)));
+    hlayout->addWidget(_backgroundLabel);
+    hlayout->addWidget(_names);
+    hlayout->setStretch(1,2);
+
+
+    QHBoxLayout* hImageLayout = new QHBoxLayout;
+    _imageView = new QLabel;
+    QPixmap pixmap(":/images/Backgrounds/park1.png");
+    pixmap.scaled(64,96,Qt::KeepAspectRatio);
+    _imageView->setScaledContents(true);
+    _imageView->setPixmap(pixmap);
+    _imageView->setMinimumSize(64,96);
+    _imageView->setMaximumSize(64,96);
+    hImageLayout->addSpacing(1);
+    hImageLayout->addWidget(_imageView);
+    _msg->setBackground(":/images/Backgrounds/park1.png");
+
     QHBoxLayout* hbuttonLayout = new QHBoxLayout;
     _entryButton = new QPushButton(this);
     _entryButton->setText("确定");
@@ -36,6 +65,8 @@ void CreateFile::init()
     _mainLayout = new QVBoxLayout(this);
     _mainLayout->addLayout(hrowLayout);
     _mainLayout->addLayout(hcolumnLayout);
+    _mainLayout->addLayout(hlayout);
+    _mainLayout->addLayout(hImageLayout);
     _mainLayout->addLayout(hbuttonLayout);
 
 }
@@ -46,10 +77,10 @@ void CreateFile::entryHandle()
     int columns = _columnEdit->text().toInt();
 //    if((0< rows && rows < 20)&&(0 < columns && columns < 20))
 //    {
-       DialogMsg* msg = new DialogMsg;
-       msg->_columns = columns;
-       msg->_rows = rows;
-       emit sendMsg(msg);
+
+       _msg->setColumn(columns);
+       _msg->setRow(rows);
+       emit sendMsg(_msg);
 ////       this->deleteLater();
 //    }
 //    else
@@ -58,4 +89,13 @@ void CreateFile::entryHandle()
 //    }
 
 
+}
+void CreateFile::changeImage(QString name)
+{
+    QString imagePath = BackGroundBasePath+QString("/")+name;
+    QPixmap pixmap(imagePath);
+    pixmap.scaled(64,96,Qt::KeepAspectRatio);
+    _imageView->setScaledContents(true);
+    _imageView->setPixmap(pixmap);
+    _msg->setBackground(imagePath);
 }

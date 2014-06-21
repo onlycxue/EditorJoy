@@ -18,41 +18,52 @@
 #include <QJsonValue>
 #include "../OrnamentalWidget/draglabel.h"
 #include "../DialogWidget/targetdialog.h"
-
-typedef struct
-{
-    int _rows;
-    int _column;
-//    TargetData* _target;
-    QVector<BlockItem*> _blocks;
-    QVector<DragLabel*> _constraints;
-
-}DataFormat;
-
+#include <QMessageBox>
+#include "../Block/generalBlock.h"
+#include "../Block/commonBlock.h"
+#include "../Block/colorBombBlock.h"
+#include "../Block/petBlock.h"
+#include <QObject>
+#include "../Block/generalBlock.h"
+#include "jsonprotocol.h"
+#include "../DialogWidget/targetdata.h"
+#include "../DialogWidget/createdata.h"
 class JsonHandle
 {
 public:
+    enum ConfigMode{
+         ConfigFile,
+         RuleFile
+    };
 
-    BlockItemArray parserConfigJson(const char * fileDir);
+    QVector<GeneralBlock*> parserConfigJson(const char * fileDir,ConfigMode mode);
     void parserRuleJson(const char * fileDir);
-    QJsonDocument exportJson(QVector<BlockLabel*> blockArray,
-                             QVector<DragLabel*> constraintArray,
-                             int row,int column,
-                             TargetData* target,
-                             QString background);
+//    QJsonDocument exportJson(QVector<BlockLabel*> blockArray,
+//                             QVector<DragLabel*> constraintArray,
+//                             int row,int column,
+//                             TargetData* target,
+//                             QString background);
+    QJsonDocument exportJson(JsonProtocol *data);
+    JsonProtocol* importJson(const char* fileDir);
+
     QVector<BlockItem*> parserJsonFileForBlocks(const char * fileDir);
     QVector<DragLabel*> parserJsonFileForconstraint(const char* fileDir);
+    CreateData* parserJsonFileForCreateData(const char * fileDir);
+    TargetData* parserJsonFileForTargetData(const char * fileDir);
+    QJsonArray parserJsonFileForGrouprule(const char *fileDir);
 
-    DataFormat* parserExistFile(const char* fileDir);
+//    DataFormat* parserExistFile(const char* fileDir);
     static JsonHandle* getInstance();
 
 private:
     JsonHandle();
    // void parserRuleByName(const char* fileName);
-    void createBlockIds(QString name,BlockItem* item);
+    int findBlockIds(QVector<GeneralBlock*> ruleBlocks,GeneralBlock* item);
+    QJsonParseError openJsonFile(const char* fileDir,QJsonDocument& document);
     void createGridIds();
 
-    BlockItemArray _blocksinfo;
+    //BlockItemArray _blocksinfo;
+    QVector<GeneralBlock*> _configBlocks;
     BlockItemArray _rules;
     //export
     QVector<int> _blockIds;
@@ -70,7 +81,7 @@ private:
     int _rows;
     int _column;
 
-    DataFormat* fileContent;
+    //DataFormat* fileContent;
     static JsonHandle* _ptr;
 
 };

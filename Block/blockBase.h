@@ -12,14 +12,17 @@ public:
     BlockBase();
     BlockBase(BlockBase &block);
 
-    BlockBase& operator=(const BlockBase &other);
-    bool operator==(const BlockBase &other);
+    virtual BlockBase& operator=(const BlockBase &other);
+    virtual bool operator==(const BlockBase &other);
 
     QString getPillar();
     QString getPillarName();
+    void setPillarName(QString name);
+    void setPillar(QString name);
     void setType(int type);
     int getType();
     virtual QJsonObject exportJsonObject();
+    virtual void printInfo();
  protected:
     QString _pillarName;
     QString _pillar;

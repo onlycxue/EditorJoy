@@ -13,71 +13,118 @@ JsonHandle* JsonHandle::getInstance()
     }
     return _ptr;
 }
-BlockItemArray JsonHandle::parserConfigJson(const char * fileDir)
+
+QJsonParseError JsonHandle::openJsonFile(const char* fileDir,QJsonDocument& document)
 {
     QFile jsonFile(fileDir);
-    qDebug() << fileDir << endl;
+    _configBlocks.clear();
     if(!jsonFile.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        qDebug() << "open file error!" << endl;
+//          QMessageBox::warning(this, QObject::tr("warn"),
+//                                     QObject::tr("config File is error !"),
+//                                     QMessageBox::Ok);
     }
 
     QTextStream txtInput(&jsonFile);
     QString fileStr;
     fileStr = txtInput.readAll();
-    //解析关卡文件
-    qDebug() << fileStr << endl;
     QJsonParseError json_error;
-    QJsonDocument parse_doucment = QJsonDocument::fromJson(fileStr.toUtf8(), &json_error);
+    document = QJsonDocument::fromJson(fileStr.toUtf8(), &json_error);
+    jsonFile.close();
+    return json_error;
+}
+QVector<GeneralBlock*> JsonHandle::parserConfigJson(const char * fileDir,ConfigMode mode)
+{
+    _configBlocks.clear();
+    QJsonDocument parse_doucment;
+    QJsonParseError json_error;
+    json_error = openJsonFile(fileDir,parse_doucment);
 
-    qDebug() << json_error.error << endl;
     if(json_error.error == QJsonParseError::NoError){
 
         if(parse_doucment.isObject())
         {
             QJsonObject obj = parse_doucment.object();
-            //解析装饰物数据
-            QJsonArray blocksArray = obj.take("blocks").toArray();
-
+            QJsonArray blocksArray;
+            if(mode == ConfigFile)
+            {
+                blocksArray = obj.take("blocks").toArray();
+            }
+            else
+            {
+               blocksArray = obj.take("rules").toArray();
+            }
             qDebug() << "blocks.size :" << blocksArray.size() << endl;
             for (int i = 0;  i< blocksArray.size(); i++)
             {
                 QJsonObject blocksInfo = blocksArray.at(i).toObject();
                 QString name = blocksInfo.take("pillarName").toString();
                 int blockType = blocksInfo.take("type").toInt();
-                QString resource = blocksInfo.take("resource").toString();
                 int matchType = blocksInfo.take("matchType").toInt();
-                int frozenLevel = blocksInfo.take("frozenLevel").toInt();
-                int multiplyFlag = blocksInfo.take("multiplier").toInt();
-                bool boxed = blocksInfo.take("boxed").toBool();
-                bool randomizedColor = blocksInfo.take("randomizedColor").toBool();
-
-                char imageDir[200];
-                sprintf(imageDir,"%s/%s",BlockImageBasePath,resource.toUtf8().data());
-                qDebug()<< "chImageDir is " << imageDir << endl;
-
-                QFile file(imageDir);
-                if (file.exists())
+                QString resource = blocksInfo.take("resource").toString();
+                if(name.compare("PRRuleCommonBlock") == 0)
                 {
-                    BlockItem *item = new BlockItem();
-                    item->init();
-                    item->_type = blockType;
-                    item->_matchType = matchType;
-                    item->_frozenLevel = frozenLevel;
-                    item->_multiplier = multiplyFlag;
-                    item->_pillarName = name;
-                    item->_boxed = boxed;
-                    item->_randomizedColor = randomizedColor;
-                    qDebug() << "###jsonType:###" <<item->_type<< endl;
-                    item->_resource = imageDir;
-                    _blocksinfo.append(item);
+                    bool frozen = blocksInfo.take("frozen").toBool();
+                    int frozenLevel = blocksInfo.take("frozenLevel").toInt();
+                    int multiplyFlag = blocksInfo.take("multiplier").toInt();
+                    CommonBlock *block = new CommonBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setFrozenable(frozen);
+                    block->setFrozenLevel(frozenLevel);
+                    block->setMultipliper(multiplyFlag);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
+
                 }
-            }
+                else if(name.compare("PRRuleColorBombBlock") == 0)
+                {
+                    int colormatch = blocksInfo.take("colorbombmatchtype").toInt();
+                    ColorBombBlock *block = new ColorBombBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setColorBombMatchType(colormatch);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
+                }
+                else if(name.compare("PRRulePetBlock") == 0)
+                {
+                    bool boxedFlag = blocksInfo.take("boxed").toBool();
+                    PetBlock *block = new PetBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setBoxedable(boxedFlag);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
+
+                }
+                else
+                {
+                    GeneralBlock *block = new GeneralBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
+                }
+                //判断是规则文件还是配置文件
+                if(mode == RuleFile)
+                {
+                    int blockId = blocksInfo.take("blockId").toInt();
+                    _configBlocks.last()->setBlockId(blockId);
+                }
+
+
         }
     }
-    jsonFile.close();
-    return _blocksinfo;
+    }
+
+    return _configBlocks;
 }
+/*
 void JsonHandle::parserRuleJson(const char * fileDir)
 {
     QFile jsonFile(fileDir);
@@ -90,13 +137,12 @@ void JsonHandle::parserRuleJson(const char * fileDir)
     QTextStream txtInput(&jsonFile);
     QString fileStr;
     fileStr = txtInput.readAll();
-    //解析关卡文件
-   // qDebug() << fileStr << endl;
     QJsonParseError json_error;
     QJsonDocument parse_doucment = QJsonDocument::fromJson(fileStr.toUtf8(), &json_error);
 
     qDebug() << json_error.error << endl;
-    if(json_error.error == QJsonParseError::NoError){
+    if(json_error.error == QJsonParseError::NoError)
+    {
 
         if(parse_doucment.isObject())
         {
@@ -111,163 +157,79 @@ void JsonHandle::parserRuleJson(const char * fileDir)
             {
 
                 QJsonObject blocksInfo = blocksArray.at(i).toObject();
-                QString pillarName = blocksInfo.take("pillarName").toString();
-
-                if(pillarName.compare("PRRuleCommonBlock") == 0)
+                QString name = blocksInfo.take("pillarName").toString();
+                int blockType = blocksInfo.take("type").toInt();
+                int matchType = blocksInfo.take("matchType").toInt();
+                QString resource = blocksInfo.take("resource").toString();
+                if(name.compare("PRRuleCommonBlock") == 0)
                 {
-                    int blockType = blocksInfo.take("type").toInt();
-                    int matchType = blocksInfo.take("matchType").toInt();
+                    bool frozen = blocksInfo.take("frozen").toBool();
                     int frozenLevel = blocksInfo.take("frozenLevel").toInt();
                     int multiplyFlag = blocksInfo.take("multiplier").toInt();
-                    bool frozen = blocksInfo.take("frozen").toBool();
-                    int blockId = blocksInfo.take("blockId").toInt();
-                    bool randomizedColor = blocksInfo.take("randomizedColor").toBool();
+                    CommonBlock *block = new CommonBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setFrozenable(frozen);
+                    block->setFrozenLevel(frozenLevel);
+                    block->setMultipliper(multiplyFlag);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
 
-                    BlockItem *item = new BlockItem();
-                    item->_pillarName = "PRRuleCommonBlock";
-                    item->_type = blockType;
-                    item->_matchType = matchType;
-                    item->_frozenLevel = frozenLevel;
-                    item->_multiplier = multiplyFlag;
-                    item->_frozen = frozen;
-                    item->_blockId = blockId;
-                    item->_randomizedColor = randomizedColor;
-                    _PRRuleCommonBlocks.append(item);
-                    _rules.append(item);
                 }
-                else if(pillarName.compare("PRRuleColorBombBlock") == 0)
+                else if(name.compare("PRRuleColorBombBlock") == 0)
                 {
-
-                    int blockType = blocksInfo.take("type").toInt();
-                    int matchType = blocksInfo.take("matchType").toInt();
-                    int blockId = blocksInfo.take("blockId").toInt();
-                    int colorbombmatchtype = blocksInfo.take("colorbombmatchtype").toInt();
-
-                    BlockItem *item = new BlockItem();
-                    item->init();
-                    item->_pillarName = "PRRuleColorBombBlock";
-                    item->_type = blockType;
-                    item->_matchType = matchType;
-                    item->_blockId = blockId;
-                    item->_colorbombmatchtype = colorbombmatchtype;
-                    _PRRuleColorBombBlocks.append(item);
-                    _rules.append(item);
+                    int colormatch = blocksInfo.take("colorbombmatchtype").toInt();
+                    ColorBombBlock *block = new ColorBombBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setColorBombMatchType(colormatch);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
                 }
-                else if(pillarName.compare("PRRulePetBlock") == 0)
+                else if(name.compare("PRRulePetBlock") == 0)
                 {
-                    int blockType = blocksInfo.take("type").toInt();
-                    int matchType = blocksInfo.take("matchType").toInt();
-                    int blockId = blocksInfo.take("blockId").toInt();
-                    bool boxed = blocksInfo.take("boxed").toBool();
-                    QString ruleName = blocksInfo.take("rulename").toString();
+                    bool boxedFlag = blocksInfo.take("boxed").toBool();
+                    PetBlock *block = new PetBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setBoxedable(boxedFlag);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
 
-                    BlockItem *item = new BlockItem();
-                    item->init();
-                    item->_pillarName = "PRRulePetBlock";
-                    item->_type = blockType;
-                    item->_matchType = matchType;
-                    item->_blockId = blockId;
-                    item->_rulename = ruleName;
-                    item->_boxed = boxed;
-                    _PRRulePetBlocks.append(item);
-                    _rules.append(item);
                 }
                 else
                 {
-                    //QString pillarName = blocksInfo.take("pillarName").toString();
-                    int blockType = blocksInfo.take("type").toInt();
-                    int matchType = blocksInfo.take("matchType").toInt();
-                    int blockId = blocksInfo.take("blockId").toInt();
-
-                    BlockItem *item = new BlockItem();
-                    item->init();
-                    item->_pillarName = pillarName;
-                    item->_type = blockType;
-                    item->_matchType = matchType;
-                    item->_blockId = blockId;
-                    _otherBlocks.append(item);
-                    _rules.append(item);
+                    GeneralBlock *block = new GeneralBlock;
+                    block->setPillarName(name);
+                    block->setType(blockType);
+                    block->setMatchType(matchType);
+                    block->setResource(resource);
+                    _configBlocks.append(block);
                 }
+
 
             }
         }
     }
     jsonFile.close();
 
-}
-void JsonHandle:: createBlockIds(QString name,BlockItem* item)
+}*/
+
+int JsonHandle:: findBlockIds(QVector<GeneralBlock*> ruleBlocks,GeneralBlock* item)
 {
-
-    if(name.compare("PRRuleCommonBlock") == 0)
+    for(int i = 0; i < ruleBlocks.size(); i++)
     {
-        qDebug() <<"PRRuleColorBombBlock size is "<<_PRRuleColorBombBlocks.size();
-        for(int i = 0; i < _PRRuleCommonBlocks.size(); i++)
+        if(*(ruleBlocks.at(i)) == *item)
         {
-            BlockItem  *block = _PRRuleCommonBlocks.at(i);
-            if(block->_type == item->_type &&
-               block->_frozenLevel == item->_frozenLevel &&
-               block->_multiplier == item->_multiplier &&
-               block->_matchType == item->_matchType &&
-               block->_frozen == item->_frozen &&
-               block->_randomizedColor == item->_randomizedColor){                      
-                _blockIds.append(block->_blockId);
-                _exportBlocksRule.append(block);
-                break;
-            }
-
+            int blockId = ruleBlocks.at(i)->getBlockId();
+            item->setBlockId(blockId);
+            return blockId;
         }
     }
-    else if(name.compare("PRRuleColorBombBlock") == 0)
-    {
-        for(int i = 0; i < _PRRuleColorBombBlocks.size(); i++)
-        {
-
-            BlockItem  *block = _PRRuleColorBombBlocks.at(i);
-            if(block->_type == item->_type &&
-               block->_matchType == item->_matchType &&
-               block->_colorbombmatchtype == item->_colorbombmatchtype){
-
-                _blockIds.append(block->_blockId);
-                _exportBlocksRule.append(block);
-               break;
-            }
-
-        }
-    }
-    else if(name.compare("PRRulePetBlock") == 0)
-    {
-        for(int i = 0; i < _PRRulePetBlocks.size(); i++)
-        {
-            BlockItem  *block = _PRRulePetBlocks.at(i);
-
-            //block->_rulename == item->_rulename &&
-            if(block->_type == item->_type &&
-               block->_matchType == item->_matchType &&
-               block->_boxed == item->_boxed){
-                _blockIds.append(block->_blockId);
-                _exportBlocksRule.append(block);
-               break;
-            }
-
-        }
-    }
-    else
-    {
-        for(int i = 0; i < _otherBlocks.size(); i++)
-        {
-            BlockItem  *block = _otherBlocks.at(i);
-            if(block->_type == item->_type &&
-               block->_matchType == item->_matchType)
-            {
-                _blockIds.append(block->_blockId);
-                _exportBlocksRule.append(block);
-               break;
-            }
-
-        }
-
-    }
-
+    return -1;
 }
 void JsonHandle::createGridIds()
 {
@@ -283,6 +245,76 @@ void JsonHandle::createGridIds()
         }
     }
 }
+QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
+{
+
+    _blockIds.clear();
+    parserConfigJson(RuleConfigPath,RuleFile);
+    for(int i = 0 ; i < data->getBlocks().size(); i++)
+    {
+        //可以判断是否没有发现blockID
+        _blockIds.append(findBlockIds(_configBlocks,data->getBlocks().at(i)));
+    }
+    //createGridIds
+    for(int i = 0 ; i < _blockIds.size(); i++)
+    {
+        if(_blockIds.at(i) == 2001)
+        {
+            _gridIds.append(2);
+        }
+        else
+        {
+            _gridIds.append(1);
+        }
+    }
+    QJsonDocument jsonDocument;
+    QJsonObject jsonLevel;
+    QJsonArray blockIdArray;
+    QJsonArray gridIdArray;
+    QJsonArray ruleArray;
+    QJsonArray jsonConstraints;
+    //rule
+    for(int i = 0; i < data->getBlocks().size(); i++)
+    {
+        ruleArray.insert(i,data->getBlocks().at(i)->exportJsonObject());
+    }
+    //blockId
+    for(int i = 0; i < _blockIds.size(); i++)
+    {
+        blockIdArray.insert(i,_blockIds.at(i));
+    }
+    //grid
+    for(int i = 0; i < _gridIds.size(); i++)
+    {
+        gridIdArray.insert(i,_gridIds.at(i));
+    }
+    //constraints
+    for(int i = 0; i < data->getConstraints().size(); i++)
+    {
+        jsonConstraints.insert(i,data->getConstraints().at(i)->exportJsonObject());
+    }
+    //加入背景 row column
+    data->getCreateData()->insertObject(jsonLevel);
+    jsonLevel.insert("rules",ruleArray);
+    jsonLevel.insert("initialBlocks",blockIdArray);
+    jsonLevel.insert("backgroundGrid",gridIdArray);
+    jsonLevel.insert("targets",data->getTargetData()->exportJsonArray());
+    jsonDocument.setObject(jsonLevel);
+    return jsonDocument;
+
+}
+JsonProtocol* JsonHandle::importJson(const char* fileDir)
+{
+    JsonProtocol* importData = new JsonProtocol;
+
+    importData->setBlocks(parserConfigJson(fileDir,RuleFile));
+    importData->setConstraints(parserJsonFileForconstraint(fileDir));
+    importData->setCreateData(parserJsonFileForCreateData(fileDir));
+    importData->setTarget(parserJsonFileForTargetData(fileDir));
+    return importData;
+}
+
+/*
 QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<DragLabel*> constraintArray,
                                      int row,int column,TargetData* target,QString background)
 {
@@ -414,80 +446,155 @@ QJsonDocument JsonHandle::exportJson(QVector<BlockLabel*> blockArray,QVector<Dra
 
     return jsonDocument;
 }
-DataFormat* JsonHandle::parserExistFile(const char* fileDir)
-{
-    _rules.clear();
-    parserRuleJson(fileDir);
-    fileContent = new DataFormat;
-    fileContent->_rows = _rows;
-    fileContent->_column = _column;
-    fileContent->_blocks = _rules;
-    fileContent->_constraints = parserJsonFileForconstraint(fileDir);
-    return fileContent;
-}
+*/
+//DataFormat* JsonHandle::parserExistFile(const char* fileDir)
+//{
+////    _rules.clear();
+////    parserRuleJson(fileDir);
+////    fileContent = new DataFormat;
+////    fileContent->_rows = _rows;
+////    fileContent->_column = _column;
+////    fileContent->_blocks = _rules;
+////    fileContent->_constraints = parserJsonFileForconstraint(fileDir);
+////    return fileContent;
 
+//}
+CreateData* JsonHandle::parserJsonFileForCreateData(const char * fileDir)
+{
+    CreateData* createData = new CreateData;
+    QJsonDocument parse_doucment;
+    QJsonParseError json_error;
+    json_error = openJsonFile(fileDir,parse_doucment);
+
+    if(json_error.error == QJsonParseError::NoError)
+    {
+        if(parse_doucment.isObject())
+        {
+            QJsonObject obj = parse_doucment.object();
+            int row = obj.take("rows").toInt();
+            int column = obj.take("cols").toInt();
+            QString background = obj.take("background").toString();
+            createData->setBackground(background);
+            createData->setColumn(column);
+            createData->setRow(row);
+        }
+    }
+    else
+    {
+        delete createData;
+        createData = NULL;
+    }
+    return createData;
+
+}
+TargetData* JsonHandle::parserJsonFileForTargetData(const char * fileDir)
+{
+    TargetData* targetData = new TargetData;
+    QJsonDocument parse_doucment;
+    QJsonParseError json_error;
+    json_error = openJsonFile(fileDir,parse_doucment);
+
+    if(json_error.error == QJsonParseError::NoError)
+    {
+        if(parse_doucment.isObject())
+        {
+            QJsonObject obj = parse_doucment.object();
+            QJsonArray targetArray = obj.take("targets").toArray();
+            for(int i=0; i < targetArray.size(); i++)
+            {
+                QJsonObject targetObject = targetArray.at(i).toObject();
+                QString name = targetObject.take("pillarName").toString();
+                if(name.compare("PRTargetPets")==0)
+                {
+                    int petNum = targetObject.take("numPets").toInt();
+                    targetData->setPetNum(petNum);
+                }
+                else if(name.compare("PRTargetStars") == 0)
+                {
+                    int star1 = targetObject.take("star_1").toInt();
+                    targetData->setStar1Score(star1);
+                    int star2 = targetObject.take("star_2").toInt();
+                    targetData->setStar2Score(star2);
+                    int star3 = targetObject.take("star_3").toInt();
+                    targetData->setStar3Score(star3);
+                }
+
+            }
+
+        }
+    }
+    else
+    {
+        delete targetData;
+        targetData = NULL;
+    }
+    return targetData;
+
+}
 QVector<BlockItem*> JsonHandle::parserJsonFileForBlocks(const char * fileDir)
 {
     _rules.clear();
-    parserRuleJson(fileDir);
+    //parserRuleJson(fileDir,RuleFile);
     return _rules;
 }
 QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir)
 {
-        _constraints.clear();
-        QFile fileLevel(fileDir);
-        if(!fileLevel.open(QIODevice::ReadOnly | QIODevice::Text))
+    _constraints.clear();
+    QJsonDocument parse_doucment;
+    QJsonParseError json_error;
+    json_error = openJsonFile(fileDir,parse_doucment);
+
+    if(json_error.error == QJsonParseError::NoError)
+    {
+        if(parse_doucment.isObject())
         {
-            //std::cout << "Open failed." << std::endl;
-           // return ;
-        }
+            QJsonObject obj = parse_doucment.object();
+            QJsonArray arrayConstraints = obj.take("constraintSprites").toArray();
+            //by cxue
+            qDebug() << "arrayConstrains.size :" << arrayConstraints.size() << endl;
+            for (int i = 0;  i< arrayConstraints.size(); i++)
+            {
+                QJsonObject constraintInfo = arrayConstraints.at(i).toObject();
+                QString resName = constraintInfo.take("resource").toString();
+                int xOffset = constraintInfo.take("xOffset").toInt();
+                int yOffset = constraintInfo.take("yOffset").toInt();
+                int offsetToTop = constraintInfo.take("iOffsetToTop").toInt();
+                char chImageDir[200];
+                sprintf(chImageDir,"%s.png",ConstraintsBasePath,resName.toUtf8().data());
+                qDebug()<< "chImageDir is " << chImageDir << endl;
+                QFile file(chImageDir);
+                if (file.exists())
+                {
+                    DragLabel * label = new DragLabel;
+                    label->show();
+                    label->setImage(resName);
+                    QPixmap pixMap(chImageDir);
+                    // label->setGeometry(xOffset,_widgetBlocksHeight - yOffset - pixMap.height(),pixMap.width(),pixMap.height());
+                    label->setGeometry(xOffset,yOffset,pixMap.width(),pixMap.height());
+                    _constraints.append(label);
 
-        QTextStream txtInput(&fileLevel);
-        QString fileStr;
-
-        fileStr = txtInput.readAll();
-        //解析关卡文件
-        QJsonParseError json_error;
-        QJsonDocument parse_doucment = QJsonDocument::fromJson(fileStr.toUtf8(), &json_error);
-
-        if(json_error.error == QJsonParseError::NoError){
-            if(parse_doucment.isObject())  {
-
-                QJsonObject obj = parse_doucment.object();
-                //解析装饰物数据
-                QJsonArray arrayConstraints = obj.take("constraintSprites").toArray();
-                //by cxue
-                qDebug() << "arrayConstrains.size :" << arrayConstraints.size() << endl;
-                for (int i = 0;  i< arrayConstraints.size(); i++) {
-                    QJsonObject constraintInfo = arrayConstraints.at(i).toObject();
-                    QString resName = constraintInfo.take("resource").toString();
-                    int xOffset = constraintInfo.take("xOffset").toInt();
-                    int yOffset = constraintInfo.take("yOffset").toInt();
-                    int offsetToTop = constraintInfo.take("iOffsetToTop").toInt();
-                    char chImageDir[200];
-                    sprintf(chImageDir,"%s/%s.png",ConstraintsBasePath,resName.toUtf8().data());
-                    qDebug()<< "chImageDir is " << chImageDir << endl;
-                    QFile file(chImageDir);
-                    if (file.exists()){
-                        qDebug() << " yes the file is exit" << endl;
-                        DragLabel * label = new DragLabel;
-                        label->show();
-                        char chImageDir[200];
-                        sprintf(chImageDir,"%s/%s",ConstraintsBasePath,resName.toUtf8().data());
-
-                        label->m_strImageName = resName.toUtf8().data();
-                        QPixmap pixMap(chImageDir);
-                        label->setPixmap(pixMap);
-                       // label->setGeometry(xOffset,_widgetBlocksHeight - yOffset - pixMap.height(),pixMap.width(),pixMap.height());
-                        label->setGeometry(xOffset,yOffset,pixMap.width(),pixMap.height());
-
-                        _constraints.append(label);
-                    }
                 }
             }
         }
-        fileLevel.close();
-        return _constraints;
+    }
+    return _constraints;
 }
+QJsonArray JsonHandle::parserJsonFileForGrouprule(const char *fileDir)
+{
+    QJsonDocument parse_doucment;
+    QJsonParseError json_error;
+    QJsonArray groupArray;
+    json_error = openJsonFile(fileDir,parse_doucment);
 
+    if(json_error.error == QJsonParseError::NoError)
+    {
+        if(parse_doucment.isObject())
+        {
+            QJsonObject obj = parse_doucment.object();
+            groupArray = obj.take("ruleBlockGroups").toArray();
+            return groupArray;
+        }
+    }
+    return groupArray;
+}
 

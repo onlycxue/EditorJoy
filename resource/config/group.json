@@ -1,0 +1,28 @@
+{
+    "ruleBlockGroups": [
+        {
+            "groupId": 1,
+            "name": "pet",
+            "pillars": [
+                {
+                    "blockId": 1004,
+                    "max": -1,
+                    "min": -1,
+                    "probability": 0.3
+                },
+                {
+                    "blockId": 1005,
+                    "max": -1,
+                    "min": -1,
+                    "probability": 0.3
+                },
+                {
+                    "blockId": 1007,
+                    "max": -1,
+                    "min": -1,
+                    "probability": 0.3
+                }
+            ]
+        }
+    ]
+}

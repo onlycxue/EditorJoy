@@ -32,7 +32,14 @@ SOURCES += \
     Block/colorBombBlock.cpp \
     Block/commonBlock.cpp \
     Block/generalBlock.cpp \
-    Block/petBlock.cpp
+    Block/petBlock.cpp \
+    JsonManage/jsonprotocol.cpp \
+    DialogWidget/createdata.cpp \
+    DialogWidget/targetdata.cpp \
+    DialogWidget/blockgroupdialog.cpp \
+    DialogWidget/groupdata.cpp \
+    DialogWidget/groupitem.cpp \
+    Block/randomBlock.cpp
 HEADERS  += \
     Block/blockbutton.h \
     Block/blockitem.h \
@@ -55,7 +62,14 @@ HEADERS  += \
     Block/colorBombBlock.h \
     Block/commonBlock.h \
     Block/generalBlock.h \
-    Block/petBlock.h
+    Block/petBlock.h \
+    JsonManage/jsonprotocol.h \
+    DialogWidget/createdata.h \
+    DialogWidget/targetdata.h \
+    DialogWidget/blockgroupdialog.h \
+    DialogWidget/groupdata.h \
+    DialogWidget/groupitem.h \
+    Block/randomBlock.h
 
 RESOURCES += \
     Resource/config.qrc \

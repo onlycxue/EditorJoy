@@ -1,22 +1,20 @@
 #include "editorwidget.h"
 
-EditorWidget::EditorWidget(DataFormat* data):_row(data->_rows),_column(data->_column),
-    _dragLabels(data->_constraints),_touchingLabel(NULL),_selectedNum(-1)
+EditorWidget::EditorWidget(JsonProtocol* data):_touchingLabel(NULL),_selectedNum(-1)
 {
+    _row = data->getCreateData()->getRow();
+    _column = data->getCreateData()->getColumn();
+    _dragLabels = data->getConstraints();
+
     editWidgetInit();
     blocksInit();
     this->setMouseTracking(true);
     actionInit();
-//    _levelTarget = new TargetData;
-//    _levelTarget->petNum =2;
-//    _levelTarget->star1Score = 1000;
-//    _levelTarget->star2Score = 2000;
-//    _levelTarget->star3Score = 3000;
 
     this->setContextMenuPolicy(Qt::DefaultContextMenu);
-    for(int i = 0 ; i <data->_blocks.size();i++)
+    for(int i = 0 ; i < data->getBlocks().size();i++)
     {
-        _blocks.at(i)->setProperty(data->_blocks.at(i));
+        _blocks.at(i)->setProperty(data->getBlocks().at(i));
         setBlocksStatus(_blocks.at(i));
     }
     for(int i = 0 ; i < _dragLabels.size(); i++)
@@ -40,6 +38,7 @@ EditorWidget::EditorWidget(int row,int column):
     this->setContextMenuPolicy(Qt::DefaultContextMenu);
 
 }
+
 void EditorWidget::editWidgetInit()
 {
     _blocksBoard = new QWidget(this);
@@ -155,6 +154,14 @@ float EditorWidget::getMouseY()
         return _touchingLabel->y();
 
 }
+BlockLabel* EditorWidget::getSelectBlock()
+{
+    if(_selectedNum == -1)
+    {
+        return NULL;
+    }
+    return _blocks.at(_selectedNum);
+}
 void EditorWidget::mousePressEvent(QMouseEvent *event)
 {
     if(event->x() >= _blocksBoard->x()+_blocksBoard->width() ||
@@ -172,10 +179,10 @@ void EditorWidget::mousePressEvent(QMouseEvent *event)
 
         if(_selectedNum != -1)
         {
-           _blocks.at(_selectedNum)->setSelect(false);
+           getSelectBlock()->setSelect(false);
         }
         _selectedNum = num;
-        _blocks.at(_selectedNum)->setSelect(true);
+        getSelectBlock()->setSelect(true);
     }
 
 
@@ -189,22 +196,21 @@ void EditorWidget::mouseMoveEvent(QMouseEvent *event)
 
 }
 
-void EditorWidget::msgHandler(BlockItem* item)
+void EditorWidget::msgHandler(GeneralBlock* item)
 {
     //要判断一下type是否为-1
-    QPixmap pixmap(item->_resource);
+    QPixmap pixmap(item->getResource());
     if(_selectedNum != -1)
     {
-        int width = _blocks.at(_selectedNum)->width();
-        int height = _blocks.at(_selectedNum)->height();
+        int width = getSelectBlock()->width();
+        int height = getSelectBlock()->height();
 
         pixmap.scaled(width,height,Qt::KeepAspectRatio);
-        _blocks.at(_selectedNum)->setScaledContents(true);
+        getSelectBlock()->setScaledContents(true);
 
-        _blocks.at(_selectedNum)->setPixmap(pixmap);
-        _blocks.at(_selectedNum)->setProperty(item);
-        qDebug() << "####msgHandle####" << _blocks.at(_selectedNum)->getPropertys()->_type << "##########";
-        qDebug() << "####msgHandle####" << item->_frozen << "##########";
+        getSelectBlock()->setPixmap(pixmap);
+        getSelectBlock()->setProperty(item);
+        getSelectBlock()->getPropertys()->printInfo();
     }
     }
 
@@ -217,10 +223,10 @@ void EditorWidget::addDragLabel(QListWidgetItem* item)
     label->show();
     char chImageDir[200];
     sprintf(chImageDir,"%s/%s",ConstraintsBasePath,item->text().toUtf8().data());
-
     label->m_strImageName = item->text().toUtf8().data();
     QPixmap pixMap(chImageDir);
-    label->setPixmap(pixMap);
+
+    label->setImage(item->text().split(".").front());
     label->setGeometry(this->width()/2,this->height()/2,pixMap.width(),pixMap.height());
     connect(label,SIGNAL(sendTouchingLabel(DragLabel*)),this,SLOT(touchingLabel(DragLabel*)));
     connect(label,SIGNAL(sendTouchEnd()),this,SLOT(touchingClean()));
@@ -233,9 +239,11 @@ void EditorWidget::actionInit()
 {
     _colorGroup = new QActionGroup(this);
     _boxedGroup = new QActionGroup(this);
-
+    _groupsActionGroup = new QActionGroup(this);
+    connect(_groupsActionGroup,SIGNAL(triggered(QAction*)),this,SLOT(groupActionSelect(QAction*)));
     _blueColor = new QAction(tr("blue"),this);
     _blueColor->setCheckable(true);
+
     //_blueColor->setChecked(true);
     _colorGroup->addAction(_blueColor);
     _boxedGroup->addAction(_blueColor);
@@ -300,20 +308,23 @@ void EditorWidget::actionInit()
     connect(_multiplier,SIGNAL(triggered()),this,SLOT(setmultiply()));
     _addGroup = new QAction(tr("addGroup"),this);
 
+
 }
 void EditorWidget::contextMenuEvent(QContextMenuEvent *event)
 {
-    int type = _blocks.at(_selectedNum)->getPropertys()->_type;
+    int type = getSelectBlock()->getPropertys()->getType();
     if(type == -1)
         return;
 
      _mainMenu = new QMenu(this);
     setActionStatus();
-    _mainMenu->addAction(_addGroup);
+    _groupsMenu =  _mainMenu->addMenu("addGroup");
+    _groupsMenu->addActions(_groupsActionGroup->actions());
+//    _mainMenu->addAction(_addGroup);
     _mainMenu->exec(event->globalPos());
 
 }
-//用来处理QAction
+
 void EditorWidget::changeBlockResource(const char* file,BlockLabel* item)
 {
     QPixmap pixmap(file);
@@ -326,199 +337,217 @@ void EditorWidget::changeBlockResource(const char* file,BlockLabel* item)
 }
 void EditorWidget::setBlueBlock()
 {
-    if(_selectedNum != -1)
+
+    if(getSelectBlock())
     {
-        int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-        qDebug() << "########" << type << "##########";
-        if(0 <= type&&type<=4)
+        QString name = getSelectBlock()->getPropertys()->getPillarName();
+        if(name.compare("PRRuleCommonBlock") == 0)
         {
-            changeBlockResource(BlueBlock,_blocks.at(_selectedNum));
-             _blocks.at(_selectedNum)->getPropertys()->_type = 0;
+            changeBlockResource(BlueBlock,getSelectBlock());
+            getSelectBlock()->getPropertys()->setType(BLUE);
         }
-        else if(7 <= type && type <=11)
+        else if(name.compare("PRRuleColorBombBlock") == 0)
         {
-            changeBlockResource(BlueColorBomb,_blocks.at(_selectedNum));
-            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
-            _blocks.at(_selectedNum)->getPropertys()->_type = 7;
-            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = BLUE;
+            ColorBombBlock* block= (ColorBombBlock*)getSelectBlock()->getPropertys();
+            changeBlockResource(BlueColorBomb,getSelectBlock());
+            block->setType(7);
+            block->setColorBombMatchType(BLUE);
         }
-        else if(type == 999)
+        else if(name.compare("PRRulePetBlock") == 0)
         {
+            PetBlock* block= (PetBlock*)getSelectBlock()->getPropertys();
            // changeBlockResource(BlueCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
-            _blocks.at(_selectedNum)->getPropertys()->_boxed = true;
-            _blocks.at(_selectedNum)->setSecondImg(BlueCarrier);
+            block->setMatchType(BLUE);
+            block->setBoxedable(true);
+            getSelectBlock()->setSecondImg(BlueCarrier);
         }
     }
+
 }
 void EditorWidget::setYellowBlock()
 {
-    if(_selectedNum != -1)
+    qDebug() << "in setYellowBlock function" << endl;
+    if(getSelectBlock())
     {
-        int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-        if(0 <= type&&type<=4)
-        {
+        qDebug() << "getSelectblock is Ok";
+        QString name = getSelectBlock()->getPropertys()->getPillarName();
 
-            changeBlockResource(YellowBlock,_blocks.at(_selectedNum));
-             _blocks.at(_selectedNum)->getPropertys()->_type = 1;
-             _blocks.at(_selectedNum)->getPropertys()->_matchType = 1;
-        }
-        else if(7 <= type && type <=11)
+        if(name.compare("PRRuleCommonBlock") == 0)
         {
-            changeBlockResource(YellowColorBomb,_blocks.at(_selectedNum));
-            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
-            _blocks.at(_selectedNum)->getPropertys()->_type = 8;
-            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = YELLOW;
+            changeBlockResource(YellowBlock,getSelectBlock());
+            getSelectBlock()->getPropertys()->setType(YELLOW);
+            getSelectBlock()->getPropertys()->setMatchType(YELLOW);
         }
-        else if(type == 999)
+        else if(name.compare("PRRuleColorBombBlock") == 0)
         {
-            //changeBlockResource(YellowCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 1;
-            _blocks.at(_selectedNum)->setSecondImg(YellowCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_boxed = true;
+            ColorBombBlock* block= (ColorBombBlock*)getSelectBlock()->getPropertys();
+            changeBlockResource(YellowColorBomb,getSelectBlock());
+            block->setType(8);
+            block->setColorBombMatchType(YELLOW);
         }
+        else if(name.compare("PRRulePetBlock") == 0)
+        {
+            PetBlock* block= (PetBlock*)getSelectBlock()->getPropertys();
+           // changeBlockResource(BlueCarrier);
+            block->setMatchType(YELLOW);
+            block->setBoxedable(true);
+            getSelectBlock()->setSecondImg(YellowCarrier);
+        }
+
     }
-
 }
 void EditorWidget::setRedBlock()
 {
-    if(_selectedNum != -1)
+    if(getSelectBlock())
     {
-        int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-        if(0 <= type&&type<=4)
-        {
-             _blocks.at(_selectedNum)->getPropertys()->_type = 2;
-             _blocks.at(_selectedNum)->getPropertys()->_matchType = 2;
-             changeBlockResource(RedBlock,_blocks.at(_selectedNum));
-        }
-        else if(7 <= type && type <=11)
-        {
-            changeBlockResource(RedColorBomb,_blocks.at(_selectedNum));
-            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
-            _blocks.at(_selectedNum)->getPropertys()->_type = 9;
-            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = RED;
-        }
-        else if(type == 999)
-        {
-            //changeBlockResource(RedCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 2;
-            _blocks.at(_selectedNum)->setSecondImg(RedCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_boxed = true;
-        }
-    }
+        QString name = getSelectBlock()->getPropertys()->getPillarName();
 
+        if(name.compare("PRRuleCommonBlock") == 0)
+        {
+            changeBlockResource(RedBlock,getSelectBlock());
+            getSelectBlock()->getPropertys()->setType(RED);
+            getSelectBlock()->getPropertys()->setMatchType(RED);
+        }
+        else if(name.compare("PRRuleColorBombBlock") == 0)
+        {
+            ColorBombBlock* block= (ColorBombBlock*)getSelectBlock()->getPropertys();
+            changeBlockResource(RedColorBomb,getSelectBlock());
+            block->setType(9);
+            block->setColorBombMatchType(RED);
+        }
+        else if(name.compare("PRRulePetBlock") == 0)
+        {
+            PetBlock* block= (PetBlock*)getSelectBlock()->getPropertys();
+           // changeBlockResource(BlueCarrier);
+            block->setMatchType(RED);
+            block->setBoxedable(true);
+            getSelectBlock()->setSecondImg(RedCarrier);
+        }
+   }
 }
 void EditorWidget::setGreenBlock()
 {
-    if(_selectedNum != -1)
+    if(getSelectBlock())
     {
-        int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-        if(0 <= type&&type<=4)
+        QString name = getSelectBlock()->getPropertys()->getPillarName();
+
+        if(name.compare("PRRuleCommonBlock") == 0)
         {
-             _blocks.at(_selectedNum)->getPropertys()->_type = 3;
-             _blocks.at(_selectedNum)->getPropertys()->_matchType = 3;
-             changeBlockResource(GreenBlock,_blocks.at(_selectedNum));
+            changeBlockResource(GreenBlock,getSelectBlock());
+            getSelectBlock()->getPropertys()->setType(GREEN);
+            getSelectBlock()->getPropertys()->setMatchType(GREEN);
         }
-        else if(7 <= type && type <=11)
+        else if(name.compare("PRRuleColorBombBlock") == 0)
         {
-            changeBlockResource(GreenColorBomb,_blocks.at(_selectedNum));
-            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
-            _blocks.at(_selectedNum)->getPropertys()->_type = 10;
-            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = GREEN;
+            ColorBombBlock* block= (ColorBombBlock*)getSelectBlock()->getPropertys();
+            changeBlockResource(GreenColorBomb,getSelectBlock());
+            block->setType(10);
+            block->setColorBombMatchType(GREEN);
         }
-        else if(type == 999)
+        else if(name.compare("PRRulePetBlock") == 0)
         {
-            //changeBlockResource(GreenCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 3;
-            _blocks.at(_selectedNum)->setSecondImg(GreenCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_boxed = true;
+            PetBlock* block= (PetBlock*)getSelectBlock()->getPropertys();
+           // changeBlockResource(BlueCarrier);
+            block->setMatchType(GREEN);
+            block->setBoxedable(true);
+            getSelectBlock()->setSecondImg(GreenCarrier);
         }
-    }
+   }
 }
 void EditorWidget::setPurpleBlock()
 {
-    if(_selectedNum != -1)
+    if(getSelectBlock())
     {
-        int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-        if(0 <= type&&type<=4)
+        QString name = getSelectBlock()->getPropertys()->getPillarName();
+
+        if(name.compare("PRRuleCommonBlock") == 0)
         {
-             _blocks.at(_selectedNum)->getPropertys()->_type = 4;
-             _blocks.at(_selectedNum)->getPropertys()->_matchType = 4;
-             changeBlockResource(PurpleBlock,_blocks.at(_selectedNum));
+            changeBlockResource(PurpleBlock,getSelectBlock());
+            getSelectBlock()->getPropertys()->setType(PURPLE);
+            getSelectBlock()->getPropertys()->setMatchType(PURPLE);
         }
-        else if(7 <= type && type <=11)
+        else if(name.compare("PRRuleColorBombBlock") == 0)
         {
-            changeBlockResource(PurpleColorBomb,_blocks.at(_selectedNum));
-            //_blocks.at(_selectedNum)->getPropertys()->_matchType = 0;
-            _blocks.at(_selectedNum)->getPropertys()->_type = 11;
-            _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype = PURPLE;
+            ColorBombBlock* block= (ColorBombBlock*)getSelectBlock()->getPropertys();
+            changeBlockResource(PurpleColorBomb,getSelectBlock());
+            block->setType(11);
+            block->setColorBombMatchType(PURPLE);
         }
-        else if(type == 999)
+        else if(name.compare("PRRulePetBlock") == 0)
         {
-            //changeBlockResource(PurpleCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_matchType = 4;
-            _blocks.at(_selectedNum)->setSecondImg(PurpleCarrier);
-            _blocks.at(_selectedNum)->getPropertys()->_boxed = true;
+            PetBlock* block= (PetBlock*)getSelectBlock()->getPropertys();
+           // changeBlockResource(BlueCarrier);
+            block->setMatchType(PURPLE);
+            block->setBoxedable(true);
+            getSelectBlock()->setSecondImg(PurpleCarrier);
         }
-    }
+   }
 
 }
 void EditorWidget::setFrozen0()
 {
-    int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-    if(0 <= type&&type<=4)
+    QString name = getSelectBlock()->getPropertys()->getPillarName();
+    if(name.compare("PRRuleCommonBlock")==0)
     {
-         _blocks.at(_selectedNum)->getPropertys()->_frozenLevel = 0;
-         _blocks.at(_selectedNum)->getPropertys()->_frozen = false;
-         _blocks.at(_selectedNum)->setSecondImg("");
-         _blocks.at(_selectedNum)->setThirdImg("");
+         CommonBlock *commonBlock= (CommonBlock*)getSelectBlock()->getPropertys();
+         commonBlock->setFrozenLevel(0);
+         commonBlock->setFrozenable(false);
+         getSelectBlock()->setSecondImg("");
+         getSelectBlock()->setThirdImg("");
     }
 }
 void EditorWidget::setFrozen1()
 {
-    int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-    if(0 <= type&&type<=4)
+    QString name = getSelectBlock()->getPropertys()->getPillarName();
+    if(name.compare("PRRuleCommonBlock")==0)
     {
-         _blocks.at(_selectedNum)->getPropertys()->_frozenLevel = 1;
-         _blocks.at(_selectedNum)->getPropertys()->_frozen = true;
-         _blocks.at(_selectedNum)->setSecondImg(FrozenLevel1);
-         _blocks.at(_selectedNum)->setThirdImg("");
+         CommonBlock *commonBlock= (CommonBlock*)getSelectBlock()->getPropertys();
+         commonBlock->setFrozenLevel(1);
+         commonBlock->setFrozenable(true);
+         getSelectBlock()->setSecondImg(FrozenLevel1);
+         getSelectBlock()->setThirdImg("");
     }
 }
 void EditorWidget::setFrozen2()
 {
-    int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-    if(0 <= type&&type<=4)
+    QString name = getSelectBlock()->getPropertys()->getPillarName();
+    if(name.compare("PRRuleCommonBlock")==0)
     {
-         _blocks.at(_selectedNum)->getPropertys()->_frozenLevel = 2;
-         _blocks.at(_selectedNum)->getPropertys()->_frozen = true;
-         _blocks.at(_selectedNum)->setSecondImg(FrozenLevel1);
-         _blocks.at(_selectedNum)->setThirdImg(FrozenLevel2);
+         CommonBlock *commonBlock= (CommonBlock*)getSelectBlock()->getPropertys();
+         commonBlock->setFrozenLevel(2);
+         commonBlock->setFrozenable(true);
+         getSelectBlock()->setSecondImg(FrozenLevel1);
+         getSelectBlock()->setThirdImg(FrozenLevel2);
     }
 }
 void EditorWidget::setmultiply()
 {
-    int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-    int multiply = _blocks.at(_selectedNum)->getPropertys()->_multiplier;
-    if(0 <= type&&type<=4)
+    QString name = getSelectBlock()->getPropertys()->getPillarName();
+    if(name.compare("PRRuleCommonBlock") == 0)
     {
-        if(multiply == 0)
+        CommonBlock *commonBlock= (CommonBlock*)getSelectBlock()->getPropertys();
+        if(commonBlock->getMultipliper() == 0)
         {
-             _blocks.at(_selectedNum)->getPropertys()->_multiplier = 2;
-             _blocks.at(_selectedNum)->setSecondImg(MultiplyFlag);
+            commonBlock->setMultipliper(2);
+            getSelectBlock()->setSecondImg(MultiplyFlag);
         }
         else
         {
-            _blocks.at(_selectedNum)->getPropertys()->_multiplier = 0;
-            _blocks.at(_selectedNum)->setSecondImg("");
+            commonBlock->setMultipliper(0);
+            getSelectBlock()->setSecondImg("");
         }
     }
 }
 
 void EditorWidget::setNoBox()
 {
-    _blocks.at(_selectedNum)->getPropertys()->_boxed = false;
-    _blocks.at(_selectedNum)->setSecondImg("");
+    QString name = getSelectBlock()->getPropertys()->getPillarName();
+    if(name.compare("PRRulePetBlock") == 0)
+    {
+        PetBlock* petBlock = (PetBlock*)(getSelectBlock()->getPropertys());
+        petBlock->setBoxedable(false);
+        getSelectBlock()->setSecondImg("");
+    }
 }
 
 void EditorWidget::setColorActionStatus(int type)
@@ -529,6 +558,8 @@ void EditorWidget::setColorActionStatus(int type)
     _colorMenu->addAction(_redColor);
     _colorMenu->addAction(_pinkColor);
     _colorMenu->addAction(_greenColor);
+//    _colorMenu->addActions(_colorGroup->actions());
+//    qDebug() <<"action Size:"<< _colorGroup->actions().size();
 
     switch(type)
     {
@@ -663,20 +694,20 @@ void EditorWidget::setForzenStatus(int level)
                 _frozenMenu->setVisible(false);
                 break;
         case 0:
-                //_blocks.at(_selectedNum)->setSecondImg("");
-                //_blocks.at(_selectedNum)->setThirdImg("");
+                //getSelectBlock()->setSecondImg("");
+                //getSelectBlock()->setThirdImg("");
                 _frozen0->setChecked(true);
                 _frozen1->setChecked(false);
                 _frozen2->setChecked(false);
                 break;
         case 1:
-               //_blocks.at(_selectedNum)->setSecondImg(FrozenLevel1);
+               //getSelectBlock()->setSecondImg(FrozenLevel1);
                _frozen0->setChecked(false);
                _frozen1->setChecked(true);
                _frozen2->setChecked(false);
                break;
         case 2:
-               //_blocks.at(_selectedNum)->setThirdImg(FrozenLevel2);
+               //getSelectBlock()->setThirdImg(FrozenLevel2);
                _frozen0->setChecked(false);
                _frozen1->setChecked(false);
                _frozen2->setChecked(true);
@@ -696,12 +727,12 @@ void EditorWidget::setmultiplyStatus(int level)
             _multiplier->setDisabled(true);
             break;
         case 0:
-//            _blocks.at(_selectedNum)->setSecondImg("");
-//            _blocks.at(_selectedNum)->setThirdImg("");
+//            getSelectBlock()->setSecondImg("");
+//            getSelectBlock()->setThirdImg("");
             _multiplier->setChecked(false);
             break;
         case 1:
-//            _blocks.at(_selectedNum)->setSecondImg(MultiplyFlag);
+//            getSelectBlock()->setSecondImg(MultiplyFlag);
             _multiplier->setChecked(true);
             break;
         default:
@@ -711,25 +742,28 @@ void EditorWidget::setmultiplyStatus(int level)
 }
 void EditorWidget::setActionStatus()
 {
-    int type = _blocks.at(_selectedNum)->getPropertys()->_type;
-    int frozenLevel = _blocks.at(_selectedNum)->getPropertys()->_frozenLevel;
-    int multiPly = _blocks.at(_selectedNum)->getPropertys()->_multiplier;
-     qDebug() << "###frozenLevel###" << frozenLevel;
-    if( 0 <= type && type <=4)
+    QString name = getSelectBlock()->getPropertys()->getPillarName();
+    if(name.compare("PRRuleCommonBlock") == 0)
     {
+        CommonBlock* commonBlock = (CommonBlock*)getSelectBlock()->getPropertys();
+        int type = commonBlock->getType();
+        int frozenLevel = commonBlock->getFrozenLevel();
+        int multiPly = commonBlock->getMultipliper();
         setColorActionStatus(type);
         setForzenStatus(frozenLevel);
         setmultiplyStatus(multiPly);
     }
-    else if (7 <= type && type <= 11)
+    else if (name.compare("PRRuleColorBombBlock") == 0)
     {
-        int matchType = _blocks.at(_selectedNum)->getPropertys()->_colorbombmatchtype;
+        ColorBombBlock* colorBomb = (ColorBombBlock*)getSelectBlock()->getPropertys();
+        int matchType = colorBomb->getColorBombMatchType();
         setColorActionStatus(matchType);
     }
-    else if(type == 999)
+    else if(name.compare("PRRulePetBlock") == 0)
     {
-        int matchType =  _blocks.at(_selectedNum)->getPropertys()->_matchType;
-        bool boxedFlag = _blocks.at(_selectedNum)->getPropertys()->_boxed;
+        PetBlock* petBlock = (PetBlock*)getSelectBlock()->getPropertys();
+        int matchType =  petBlock->getMatchType();
+        bool boxedFlag = petBlock->getBoxedable();
         qDebug() << "boxed flag is " << boxedFlag;
         setBoxColorActionStatus(matchType,boxedFlag);
     }
@@ -737,27 +771,30 @@ void EditorWidget::setActionStatus()
 }
 QString EditorWidget::getResourceFromConfig(QString name)
 {
-   qDebug() << "current name is " << name;
-  BlockItemArray array = JsonHandle::getInstance()->parserConfigJson(BlockConfigPath);
-  for(int i = 0 ; i < array.size(); i++)
-  {
-        qDebug() << "{" ;
-        array.at(i)->printInfo();
-        qDebug() << "}";
-        if(name.compare(array.at(i)->_pillarName) == 0)
-        {
-            return array.at(i)->_resource;
-        }
-  }
-  return QString::null;
+       qDebug() << "current name is " << name;
+      QVector<GeneralBlock*> array = JsonHandle::getInstance()->parserConfigJson(BlockConfigPath,JsonHandle::ConfigFile);
+      for(int i = 0 ; i < array.size(); i++)
+      {
+            qDebug() << "{" ;
+            array.at(i)->printInfo();
+            qDebug() << "}";
+            if(name.compare(array.at(i)->getPillarName()) == 0)
+            {
+                return array.at(i)->getResource();
+            }
+      }
+      return QString::null;
 }
 void EditorWidget::setBlocksStatus(BlockLabel* item)
 {
-    if(item->getPropertys()->_pillarName.compare("PRRuleCommonBlock")==0)
+    QString name = item->getPropertys()->getPillarName();
+    if(name.compare("PRRuleCommonBlock")==0)
     {
-        int frozenLevel = item->getPropertys()->_frozenLevel;
-        int multiplyFlag = item->getPropertys()->_multiplier;
-        bool frozen = item->getPropertys()->_frozen;
+        CommonBlock* commonBlock = (CommonBlock*) item;
+
+        int frozenLevel = commonBlock->getFrozenLevel();
+        int multiplyFlag = commonBlock->getMultipliper();
+        bool frozen = commonBlock->getFrozenable();
         setBlockColor(item);
         if(frozen)
         {
@@ -777,33 +814,34 @@ void EditorWidget::setBlocksStatus(BlockLabel* item)
         }
 
     }
-    else if(item->getPropertys()->_pillarName.compare("PRRuleColorBombBlock") == 0)
+    else if(name.compare("PRRuleColorBombBlock") == 0)
     {
         setBlockColor(item);
     }
-    else if(item->getPropertys()->_pillarName.compare("PRRulePetBlock") == 0)
+    else if(name.compare("PRRulePetBlock") == 0)
     {
-        if(item->getPropertys()->_boxed)
+        PetBlock* petBlock = (PetBlock*)item;
+        if(petBlock->getBoxedable())
         {
             setPetBoxedColor(item);
         }
         else
         {
-            QString imageName = EditorWidget::getResourceFromConfig(item->getPropertys()->_pillarName);
+            QString imageName = EditorWidget::getResourceFromConfig(item->getPropertys()->getPillarName());
             changeBlockResource(imageName.toUtf8().data(),item);
         }
     }
     else
     {
 
-        QString imageName = EditorWidget::getResourceFromConfig(item->getPropertys()->_pillarName);
+        QString imageName = EditorWidget::getResourceFromConfig(item->getPropertys()->getPillarName());
         changeBlockResource(imageName.toUtf8().data(),item);
 
     }
 }
 void EditorWidget::setBlockColor(BlockLabel*  item)
 {
-    switch(item->getPropertys()->_type)
+    switch(item->getPropertys()->getType())
     {
         case 0:
                changeBlockResource(BlueBlock,item);
@@ -842,7 +880,7 @@ void EditorWidget::setBlockColor(BlockLabel*  item)
 }
 void EditorWidget::setPetBoxedColor(BlockLabel*  item)
 {
-    switch(item->getPropertys()->_matchType)
+    switch(item->getPropertys()->getMatchType())
     {
         case 0:
                changeBlockResource(BlueCarrier,item);
@@ -890,9 +928,13 @@ int EditorWidget::getColumn()
 {
     return _column;
 }
-QVector<BlockLabel*> EditorWidget::getBlocks()
+QVector<GeneralBlock*> EditorWidget::getBlocks()
 {
-    return _blocks;
+    for(int i = 0 ; i < _blocks.size();i++)
+    {
+        _generalBlocks.append(_blocks.at(i)->getPropertys());
+    }
+    return _generalBlocks;
 }
 QVector<DragLabel*> EditorWidget::getConstraints()
 {
@@ -913,17 +955,6 @@ void EditorWidget::touchingClean()
 //    _levelTarget->star2Score = data->star2Score;
 //    _levelTarget->star3Score = data->star3Score;
 //}
-DataFormat* EditorWidget::getExportData()
-{
-    _jsonExportData = new DataFormat;
-////    _jsonExportData->_target = _levelTarget;
-//    _jsonExportData->_column = _column;
-//    _jsonExportData->_rows = _row;
-//    _jsonExportData->_constraints = _dragLabels;
-//    //_jsonExportData->_blocks = _blocks;
-
-    return _jsonExportData;
-}
 
 void EditorWidget::setBlocksBoardImg(QString image)
 {
@@ -936,7 +967,28 @@ void EditorWidget::setBlocksBoardImg(QString image)
     this->setPalette(palette);
 
 }
+void EditorWidget::getGroupsFromDialog(QVector<GroupData*> groups)
+{
 
+    QAction* action = new QAction(groups.last()->getName(),this);
+    _groupsActionGroup->addAction(action);
+    //connect(action,SIGNAL(triggered()),this,SLOT(groupActions()));
+}
+void EditorWidget::setBlockGroupRule(QVector<GroupData*> data)
+{
+    _blockGroups = data;
+    for(int i = 0; i < data.size();i++)
+    {
+        QAction* action = new QAction(data.at(i)->getName(),this);
+       // connect(action,SIGNAL(triggered()),this,SLOT(groupActions()));
+        _groupsActionGroup->addAction(action);
+    }
+    //getGroupsFromDialog(data);
+}
+void EditorWidget::groupActionSelect(QAction* action)
+{
+    qDebug() << action->text();
+}
 EditorWidget::~EditorWidget()
 {
 

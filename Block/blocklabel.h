@@ -12,25 +12,27 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include "../Global/globaldef.h"
+#include "../Block/generalBlock.h"
+#include "../Block/commonBlock.h"
 
 class BlockLabel : public QLabel
 {
     Q_OBJECT
 public:
-    explicit BlockLabel(BlockItem *item,QWidget *parent = 0);
+    explicit BlockLabel(GeneralBlock *item,QWidget *parent = 0);
     BlockLabel(QWidget *parent = 0);
     void setFocusColor(QColor color);
     void setSelect(bool flag);
     bool isSelect();
-    BlockItem* getPropertys();
-    void setProperty(BlockItem* item);
+    GeneralBlock* getPropertys();
+    void setProperty(GeneralBlock* item);
     void setSecondImg(const char* fileName);
     void setThirdImg(const char* fileName);
     void propertyInit();
 protected:
 
 private:
-    BlockItem* _propertys;
+    GeneralBlock* _propertys;
     QColor _focusColor;
     bool _isSelect;
     QLabel *_secondImgLabel;

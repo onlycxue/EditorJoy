@@ -1,23 +1,16 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),_levelTargetData(NULL),_levelBackground(QString::null)
+    : QMainWindow(parent)
 {
     resize(1100,600);
     uiInit();
-
-
 }
 
 void MainWindow::uiInit()
 {
-
-    _statementDialog = new Statement(this);
-    _backgroudDialog = new BackgroudDialog(this);
-    connect(_backgroudDialog,SIGNAL(backgroundName(QString)),this,SLOT(setLevelBackgroud(QString)));
-    _targetDialog = new TargetDialog(this);
-    connect(_targetDialog,SIGNAL(Clicked(TargetData*)),this,SLOT(setLevelTarData(TargetData*)));
-
+    jsonDataInit();
+    dialogInit();
     menubarInit();
     toolbarInit();
     editorWidgetInit();
@@ -31,12 +24,23 @@ void MainWindow::uiInit()
     _timer->setInterval(50);
     connect(_timer,SIGNAL(timeout()),this,SLOT(update()));
 
-//    BlockItemArray _array = JsonHandle::getInstance()->parserRuleJson(RuleConfigPath);
-//    qDebug() << "_arraySize is " << _array.size() << endl;
-/*      _backgroudDialog = new BackgroudDialog(this);
-      connect(_backgroudDialog,SIGNAL(backgroundName(QString)),this,SLOT(setLevelBackgroud(QString)))*/;
 }
+void MainWindow::jsonDataInit()
+{
+    _jsonData = new JsonProtocol;
+}
+void MainWindow::dialogInit()
+{
+    _statementDialog = new Statement(this);
+    _backgroudDialog = new BackgroudDialog(this);
+    connect(_backgroudDialog,SIGNAL(backgroundName(QString)),this,SLOT(setLevelBackgroud(QString)));
+    _targetDialog = new TargetDialog(this);
+    connect(_targetDialog,SIGNAL(Clicked(TargetData*)),this,SLOT(setLevelTarData(TargetData*)));
+    _createDialog = new CreateFile(this);
+    connect(_createDialog,SIGNAL(sendMsg(CreateData*)),this,SLOT(createEditorWidget(CreateData*)));
+    _groupDialog = new BlockGroupDialog(GroupRulePath,this);
 
+}
 void MainWindow::menubarInit()
 {
     _menubar = new QMenuBar(this);
@@ -50,7 +54,7 @@ void MainWindow::menubarInit()
 
     _createFile = new QAction(QIcon(newFileIcon),"新建...",this);
     filemenu->addAction(_createFile);
-    connect(_createFile,SIGNAL(triggered()),this,SLOT(showCreateDialog()));
+    connect(_createFile,SIGNAL(triggered()),_createDialog,SLOT(show()));
     _exportFile = new QAction(QIcon(exportfileIcon),"导出...",this);
     filemenu->addAction(_exportFile);  
     connect(_exportFile,SIGNAL(triggered()),this,SLOT(exportFileHandle()));
@@ -75,7 +79,9 @@ void MainWindow::menubarInit()
     _leveBackGround = new QAction(QIcon(levelBackgroundIcon),"关卡背景",this);
     connect(_leveBackGround,SIGNAL(triggered()),_backgroudDialog,SLOT(show()));
     setmenu->addAction(_leveBackGround);
-
+    QAction* groupAction = new QAction("添加组",this);
+    setmenu->addAction(groupAction);
+    connect(groupAction,SIGNAL(triggered()),_groupDialog,SLOT(show()));
 
     QMenu* helpmenu = new QMenu(_menubar);
     helpmenu->setObjectName(QStringLiteral("menu"));
@@ -97,7 +103,7 @@ void MainWindow::toolbarInit()
 
     QAction *newFile = new QAction(QIcon(newFileIcon),
                                         "&New",this);
-    connect(newFile,SIGNAL(triggered()),this,SLOT(showCreateDialog()));
+    connect(newFile,SIGNAL(triggered()),_createDialog,SLOT(show()));
     newFile->setStatusTip("新建文件");
     _toolbar->addAction(newFile);
 
@@ -122,13 +128,6 @@ void MainWindow::editorWidgetInit()
      _editorArea->setMaximumHeight(540);
      _editorArea->setAlignment(Qt::AlignCenter);
      _editorWidget = NULL;
-//     _editorWidget = new EditorWidget(4,4);
-//     _editorArea->setWidget(_editorWidget);
-
-
-    //_editorWidget->setGeometry(300,50,600,600);
-    //_editorWidget->setParent(this);
-   // _editorArea->resize(600,600);
 }
 void MainWindow::blocksWidgetInit()
 {
@@ -187,26 +186,25 @@ void MainWindow::update()
 
 
 }
-void MainWindow::showCreateDialog()
-{
-        _createDialog = new CreateFile(this);
-        connect(_createDialog,SIGNAL(sendMsg(DialogMsg*)),
-                this,SLOT(createEditorWidget(DialogMsg*)));
-        _createDialog->show();
-}
 
-void MainWindow::createEditorWidget(DialogMsg* msg)
+void MainWindow::createEditorWidget(CreateData* msg)
 {
 
-    if(0 < msg->_columns&&msg->_columns <= 9 && 5 < msg->_rows&&msg->_rows <= 12)
+    if(0 < msg->getColumn()&&msg->getColumn() <= 9 && 5 < msg->getRow()&&msg->getRow() <= 12)
     {
-        _editorWidget = new EditorWidget(msg->_rows,msg->_columns);
+        _editorWidget = new EditorWidget(msg->getRow(),msg->getColumn());
         _editorArea->setWidget(_editorWidget);
-        connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
+        connect(_blocksWidget,SIGNAL(Clicked(GeneralBlock*)),_editorWidget,SLOT(msgHandler(GeneralBlock*)));
         connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
+        connect(_groupDialog,SIGNAL(groupsSender(QVector<GroupData*>)),_editorWidget,SLOT(getGroupsFromDialog(QVector<GroupData*>)));
+        _editorWidget->setBlockGroupRule(_groupDialog->getGroups());
+        _editorWidget->setBlocksBoardImg(msg->getBackground().toUtf8().data());
+        qDebug() << msg->getBackground();
         delete msg;
         _timer->start();
         _createDialog->close();
+        //save data
+        _jsonData->setCreateData(msg);
     }
     else
     {
@@ -220,20 +218,21 @@ void MainWindow::exportFileHandle()
 {
     if(_editorWidget != NULL)
     {
-        if(_levelTargetData == NULL || _levelBackground == QString::null)
-        {
-            int ret = QMessageBox::warning(this, tr("warn"),
-                                           tr("请先确保关卡目标或关卡背景已经设置！"),
-                                              QMessageBox::Ok);
-        }
-        else
+//        if(_levelTargetData == NULL || _levelBackground == QString::null)
+//        {
+//            int ret = QMessageBox::warning(this, tr("warn"),
+//                                           tr("请先确保关卡目标或关卡背景已经设置！"),
+//                                              QMessageBox::Ok);
+//        }
+//        else
         {
            _editorWidget->exportBlocksMsg();
-          QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
-                                                  _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
-          new ExportFile(document,this);
-          _levelTargetData == NULL;
-          _levelBackground == QString::null;
+//          QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
+//                                                  _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
+           _jsonData->setBlocks(_editorWidget->getBlocks());
+           _jsonData->setConstraints(_editorWidget->getConstraints());
+           QJsonDocument document = JsonHandle::getInstance()->exportJson(_jsonData);
+           new ExportFile(document,this);
         }
     }
     else
@@ -249,7 +248,8 @@ void MainWindow::importFileHandle()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                     "./Export",
                                                     tr("Text files (*.json)"));
-    _editorWidget = new EditorWidget(JsonHandle::getInstance()->parserExistFile(fileName.toUtf8().data()));
+    _jsonData=JsonHandle::getInstance()->importJson(fileName.toUtf8().data());
+    _editorWidget = new EditorWidget(_jsonData);
     _editorArea->setWidget(_editorWidget);
     connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
     connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
@@ -273,7 +273,8 @@ void MainWindow::setLevelTarData(TargetData* data)
 {
     if(_editorWidget != NULL)
     {
-        _levelTargetData = data;
+        //save data;
+        _jsonData->setTarget(data);
     }
     else
     {
@@ -291,8 +292,10 @@ void MainWindow::setLevelBackgroud(QString image)
         char fileName[200];
         sprintf(fileName,"%s/%s",BackGroundBasePath,image.toUtf8().data());
         qDebug() <<"Board image is " <<fileName;
-        _levelBackground = image;
         _editorWidget->setBlocksBoardImg(fileName);
+        //save background
+       // _jsonData->getCreateData()->setBackground(image.split(".").front());
+
     }
     else
     {

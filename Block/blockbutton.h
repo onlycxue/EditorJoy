@@ -3,18 +3,19 @@
 #include <QPushButton>
 #include "blockitem.h"
 #include <QDebug>
+#include "generalBlock.h"
 
 class BlockButton : public QPushButton
 {
      Q_OBJECT
 public:
-    BlockButton(BlockItem *item,QWidget* parent = 0);
+    BlockButton(GeneralBlock *item,QWidget* parent = 0);
     void mousePressEvent(QMouseEvent *event);
 
 signals:
-    void Click(BlockItem*);
+    void Click(GeneralBlock*);
 private:
-    BlockItem* _propertys;
+    GeneralBlock* _propertys;
 };
 
 #endif // BLOCKBUTTON_H

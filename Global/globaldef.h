@@ -5,7 +5,7 @@ static const char* BackGroundBasePath=":/images/Backgrounds";
 static const char* BlockImageBasePath = ":/images/PopUps";
 static const char* BlockConfigPath = ":/config/config.json";
 static const char* ConstraintsBasePath = ":/images/Constraints";
-
+static const char* GroupRulePath = ":/config/group.json";
 //color blocks
 static const char* GreenBlock = ":/images/Blocks/common_green_2.png";
 static const char* PurpleBlock = ":/images/Blocks/common_purple_2.png";

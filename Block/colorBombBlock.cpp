@@ -12,21 +12,22 @@ ColorBombBlock::ColorBombBlock(ColorBombBlock &other)
     _matchType = other._matchType;
     _colorBombMatchType = other._colorBombMatchType;
 }
-bool ColorBombBlock::operator == (const ColorBombBlock &other)
+bool ColorBombBlock::operator == (const BlockBase &other)
 {
-    return  (_pillar == other._pillar&&
-    _pillarName == other._pillarName&&
-    _type == other._type&&
-    _matchType == other._matchType&&
-    _colorBombMatchType == other._colorBombMatchType);
+    ColorBombBlock colorBomb = (ColorBombBlock&)other;
+    return  (  _pillarName == colorBomb._pillarName&&
+                _type == colorBomb._type&&
+                _matchType == colorBomb._matchType&&
+                _colorBombMatchType == colorBomb._colorBombMatchType);
 }
-ColorBombBlock& ColorBombBlock::operator =(const ColorBombBlock &other)
+BlockBase& ColorBombBlock::operator =(const BlockBase &other)
 {
-    _pillar = other._pillar;
-    _pillarName = other._pillarName;
-    _type = other._type;
-    _matchType = other._matchType;
-    _colorBombMatchType = other._colorBombMatchType;
+    ColorBombBlock& colorBomb = (ColorBombBlock&)other;
+    _pillar = colorBomb._pillar;
+    _pillarName = colorBomb._pillarName;
+    _type = colorBomb._type;
+    _matchType = colorBomb._matchType;
+    _colorBombMatchType = colorBomb._colorBombMatchType;
     return *this;
 }
 void ColorBombBlock::setColorBombMatchType(int matchType)
@@ -46,6 +47,17 @@ QJsonObject ColorBombBlock::exportJsonObject()
     object.insert("type",_type);
     object.insert("matchType",_matchType);
     object.insert("colorbombmatchtype",_colorBombMatchType);
+    object.insert("blockId",_blockId);
     return object;
 
+}
+void ColorBombBlock::printInfo()
+{
+    qDebug() << "{";
+    qDebug() << _pillar ;
+    qDebug() << _pillarName;
+    qDebug() << _type;
+    qDebug() << _matchType;
+    qDebug() << _colorBombMatchType;
+    qDebug() << "}";
 }

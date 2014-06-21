@@ -7,14 +7,9 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
-
-typedef struct
-{
-    int _rows;
-    int _columns;
-
-}DialogMsg;
-
+#include "createdata.h"
+#include <QComboBox>
+#include "../Global/globaldef.h"
 
 class CreateFile:public QDialog
 {
@@ -25,17 +20,26 @@ public:
      void init();
 public slots:
      void entryHandle();
+     void changeImage(QString name);
 signals:
-     void sendMsg(DialogMsg*);
+     void sendMsg(CreateData*);
+
 private:
      QLabel* _rowLabel;
      QLabel* _columnLabel;
+     QLabel* _backgroundLabel;
+
+     QLabel* _imageView;
+
      QLineEdit* _rowEdit;
      QLineEdit* _columnEdit;
+     QComboBox* _names;
+     QString _imageName;
 
      QPushButton* _entryButton;
      QPushButton* _cancelButton;
      QVBoxLayout* _mainLayout;
+     CreateData* _msg;
 };
 
 #endif

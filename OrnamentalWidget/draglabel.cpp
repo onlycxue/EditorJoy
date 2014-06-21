@@ -68,3 +68,21 @@ void DragLabel::bringToTop(){
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
     this->raise();
 }
+void DragLabel::setImage(QString file)
+{
+    char chImageDir[200];
+    sprintf(chImageDir,"%s/%s.png",ConstraintsBasePath,file.toUtf8().data());
+    QPixmap pixMap(chImageDir);
+    this->setPixmap(pixMap);
+
+    _imageName = file.split(".").front();
+}
+QJsonObject DragLabel::exportJsonObject()
+{
+    QJsonObject object;
+    object.insert("iOffsetToTop",600);
+    object.insert("resource",_imageName);
+    object.insert("xOffset",x());
+    object.insert("yOffset",y());
+    return object;
+}

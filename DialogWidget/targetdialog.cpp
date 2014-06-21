@@ -3,11 +3,7 @@
 TargetDialog::TargetDialog(QWidget* parent):
     QDialog(parent)
 {
-    data = new TargetData;
-    data->petNum = 0;
-    data->star1Score = 0;
-    data->star2Score = 0;
-    data->star3Score = 0;
+    _data = new TargetData;
     init();
 }
 
@@ -60,20 +56,29 @@ void TargetDialog::init()
     globalLayout->addLayout(buttonLayout);
 
 }
+void TargetDialog::setCurrentData(TargetData* data)
+{
+    _data = data;
+    QString petNum;
+    petNum.setNum(data->getPetNum());
+    _petSumLineEdit->setText(petNum);
+    QString star1;
+    star1.setNum(data->getStar1Score());
+    _star1LineEdit->setText(star1);
+    QString star2;
+    star2.setNum(data->getStar2Score());
+    _star2LineEdit->setText(star2);
+    QString star3;
+    star3.setNum(data->getStar3Score());
+    _star3LineEdit->setText(star3);
 
+}
 void TargetDialog::ClickedHandle()
 {
-    data->petNum = _petSumLineEdit->text().toInt();
-    data->star1Score = _star1LineEdit->text().toInt();
-    data->star2Score = _star2LineEdit->text().toInt();
-    data->star3Score = _star3LineEdit->text().toInt();
+    _data->setPetNum(_petSumLineEdit->text().toInt());
+    _data->setStar1Score(_star1LineEdit->text().toInt());
+    _data->setStar2Score(_star2LineEdit->text().toInt());
+    _data->setStar3Score(_star3LineEdit->text().toInt());
     this->close();
-    emit Clicked(data);
+    emit Clicked(_data);
 }
-
-
-
-
-
-
-

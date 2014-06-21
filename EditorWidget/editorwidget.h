@@ -12,7 +12,8 @@
 #include "../Global/globaldef.h"
 #include <QActionGroup>
 #include "../JsonManage/jsonhandle.h"
-//#include "../DialogWidget/targetdialog.h"
+#include "../JsonManage/jsonprotocol.h"
+#include "../DialogWidget/groupdata.h"
 
 #define BLOCK_WIDTH 70
 #define BLOCK_HEIGHT 70
@@ -30,15 +31,17 @@ public:
         GREEN,
         PURPLE
     };
-    EditorWidget(DataFormat* data);
+    EditorWidget(JsonProtocol* data);
     EditorWidget(int row,int column);
+    BlockLabel* getSelectBlock();
+
     void setRow(int num);
     void setColumn(int num);
     int getRow();
     int getColumn();
-    QVector<BlockLabel*> getBlocks();
+    QVector<GeneralBlock*> getBlocks();
     QVector<DragLabel*> getConstraints();
-    DataFormat* getExportData();
+
     void editWidgetInit();
     void blocksInit();
     float getMouseX();
@@ -60,8 +63,10 @@ public:
     void mouseMoveEvent(QMouseEvent *event);
     virtual void contextMenuEvent(QContextMenuEvent *event);
     ~EditorWidget();
+    void setBlockGroupRule(QVector<GroupData*> data);
 public slots:
-    void msgHandler(BlockItem* block);
+    void getGroupsFromDialog(QVector<GroupData*> groups);
+    void msgHandler(GeneralBlock* block);
     void addDragLabel(QListWidgetItem* item);
     void setBlueBlock();
     void setYellowBlock();
@@ -77,26 +82,28 @@ public slots:
     void touchingClean();
     void deleteDragLabel(DragLabel* item);
 //    void setLevelTatget(TargetData* data);
+    void groupActionSelect(QAction* action);
 private:
     int _row;
     int _column;
     QWidget* _blocksBoard;
     //QWidget* _editWidget;
     QVector<BlockLabel*> _blocks;
+    QVector<GeneralBlock*> _generalBlocks;
     QVector<DragLabel*> _dragLabels;
     DragLabel* _touchingLabel;
 //    TargetData* _levelTarget;
-    DataFormat* _jsonExportData;
     int _selectedNum;
     QGridLayout* _gridLayout;
     float _mouseX;
     float _mouseY;
-
+    QVector<GroupData*> _blockGroups;
     //右击弹出菜单
     QMenu *_mainMenu;
     QMenu *_colorMenu;
     QMenu *_frozenMenu;
     QMenu *_boxedMenu;
+    QMenu *_groupsMenu;
 
     //二级菜单颜色
 
@@ -120,6 +127,9 @@ private:
 
     QAction *_multiplier;
     QAction *_addGroup;
+
+    //blockGroup
+    QActionGroup* _groupsActionGroup;
 
 };
 

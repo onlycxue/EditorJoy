@@ -34,6 +34,14 @@ QJsonObject BlockBase::exportJsonObject()
     object.insert("type",_type);
     return object;
 }
+void BlockBase::setPillarName(QString name)
+{
+    _pillarName = name;
+}
+void BlockBase::setPillar(QString name)
+{
+    _pillar = name;
+}
 QString BlockBase::getPillar()
 {
     return _pillar;
@@ -49,4 +57,12 @@ void BlockBase::setType(int type)
 int BlockBase::getType()
 {
     return _type;
+}
+void BlockBase::printInfo()
+{
+    qDebug() << "{";
+    qDebug() << _pillar ;
+    qDebug() << _pillarName;
+    qDebug() << _type;
+    qDebug() << "}";
 }
