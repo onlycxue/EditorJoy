@@ -21,6 +21,7 @@ void CreateData::setColumn(int column)
 }
 void CreateData::setBackground(QString image)
 {
+
     _background = image;
 }
 int CreateData::getRow()

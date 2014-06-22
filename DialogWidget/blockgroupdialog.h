@@ -9,6 +9,8 @@
 #include <QHBoxLayout>
 #include "groupdata.h"
 #include "FileManage/exportfile.h"
+#include "../JsonManage/jsonhandle.h"
+
 class BlockGroupDialog:public QDialog
 {
     Q_OBJECT
@@ -25,6 +27,8 @@ public:
      void addItem(int blockId, float weight);
 //     QVector<QString> getGroupIds();
      QVector<GroupData*> getGroups();
+ //    QVector<GeneralBlock*> getGroupBlockRules();
+
 public slots:
 
       void addGroup();
@@ -60,6 +64,7 @@ private:
 
      QVector<GroupData*> _groups;
 //     QVector<QString> _groudIds;
+//     QVector<GeneralBlock*> _groupBlockRules;
 };
 
 #endif

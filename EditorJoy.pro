@@ -72,8 +72,8 @@ HEADERS  += \
     Block/randomBlock.h
 
 RESOURCES += \
-    Resource/config.qrc \
-    Resource/images.qrc
+    resource/config.qrc \
+    resource/images.qrc
 
 OTHER_FILES += \
     myRc.rc

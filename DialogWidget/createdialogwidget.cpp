@@ -80,6 +80,7 @@ void CreateFile::entryHandle()
 
        _msg->setColumn(columns);
        _msg->setRow(rows);
+//       _msg->setBackground(_names->currentText());
        emit sendMsg(_msg);
 ////       this->deleteLater();
 //    }

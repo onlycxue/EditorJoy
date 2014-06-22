@@ -10,6 +10,7 @@
 #include "createdata.h"
 #include <QComboBox>
 #include "../Global/globaldef.h"
+#include <QDebug>
 
 class CreateFile:public QDialog
 {

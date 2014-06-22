@@ -5,44 +5,51 @@
             "type": 999,
             "boxed": false,
             "matchType": 0,
-            "resource": "animal_cat.png"
+            "resource": "animal_cat.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleBlankBlock",
             "type": 2000,
             "matchType": 0,
-            "resource": "number_0.png"
+            "resource": "number_0.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleConstraintBlock",
             "type": 2001,
             "matchType": 0,
-            "resource": "number_2.png"
+            "resource": "number_2.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleBlackBlock",
             "type": 18,
             "matchType": 0,
-            "resource": "popup_1.png"
+            "resource": "popup_1.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleBringDownBomb",
             "type": 5,
             "matchType": 0,
-            "resource": "popup_2.png"
+            "resource": "popup_2.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleBringDownScoreBlock",
             "type": 13,
             "matchType": 0,
-            "resource": "popup_3.png"
+            "resource": "popup_3.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleColorBombBlock",
             "type": 7,
             "matchType": 0,
             "colorbombmatchtype": 0,
-            "resource": "popup_6.png"
+            "resource": "popup_6.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleCommonBlock",
@@ -51,43 +58,50 @@
             "frozenLevel": 1,
             "multiplier": 0,
             "randomizedColor": false,
-            "resource": "popup_7.png"
+            "resource": "popup_7.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleBringDownKeyBlock",
             "type": 17,
             "matchType": 0,
-            "resource": "popup_8.png"
+            "resource": "popup_8.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleLineblastBlock",
             "type": 6,
             "matchType": 0,
-            "resource": "popup_9.png"
+            "resource": "popup_9.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleLockBlock",
             "type": 16,
             "matchType": 0,
-            "resource": "popup_10.png"
+            "resource": "popup_10.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleCageBlock",
             "type": 15,
             "matchType": 0,
-            "resource": "popup_11.png"
+            "resource": "popup_11.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleInfectedBlock",
             "type": 20,
             "matchType": 0,
-            "resource": "popup_13.png"
+            "resource": "popup_13.png",
+	    "blockId": -1
         },
         {
             "pillarName": "PRRuleRanddomBlock",
-            "type": -1,
+            "type": -2,
             "matchType": 0,
-            "resource": "random.png"
+            "resource": "random.png",
+	    "blockId":-2
         }
     ]
 }

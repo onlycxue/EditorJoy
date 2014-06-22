@@ -1,7 +1,7 @@
 #ifndef JSONHANDLE_H
 #define JSONHANDLE_H
 #include <QString>
-#include <qDebug>
+#include <QDebug>
 #include <QJsonParseError>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -59,6 +59,7 @@ private:
     JsonHandle();
    // void parserRuleByName(const char* fileName);
     int findBlockIds(QVector<GeneralBlock*> ruleBlocks,GeneralBlock* item);
+    GeneralBlock* findGroupBlock(int blockId);
     QJsonParseError openJsonFile(const char* fileDir,QJsonDocument& document);
     void createGridIds();
 

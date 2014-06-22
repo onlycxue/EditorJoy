@@ -62,6 +62,7 @@ QVector<GeneralBlock*> JsonHandle::parserConfigJson(const char * fileDir,ConfigM
                 int blockType = blocksInfo.take("type").toInt();
                 int matchType = blocksInfo.take("matchType").toInt();
                 QString resource = blocksInfo.take("resource").toString();
+                //int blockid = blocksInfo.take("blockId").toInt();
                 if(name.compare("PRRuleCommonBlock") == 0)
                 {
                     bool frozen = blocksInfo.take("frozen").toBool();
@@ -74,6 +75,7 @@ QVector<GeneralBlock*> JsonHandle::parserConfigJson(const char * fileDir,ConfigM
                     block->setFrozenable(frozen);
                     block->setFrozenLevel(frozenLevel);
                     block->setMultipliper(multiplyFlag);
+                    //block->setBlockId(blockid);
                     block->setResource(resource);
                     _configBlocks.append(block);
 
@@ -86,6 +88,7 @@ QVector<GeneralBlock*> JsonHandle::parserConfigJson(const char * fileDir,ConfigM
                     block->setType(blockType);
                     block->setMatchType(matchType);
                     block->setColorBombMatchType(colormatch);
+                    //block->setBlockId(blockid);
                     block->setResource(resource);
                     _configBlocks.append(block);
                 }
@@ -97,6 +100,7 @@ QVector<GeneralBlock*> JsonHandle::parserConfigJson(const char * fileDir,ConfigM
                     block->setType(blockType);
                     block->setMatchType(matchType);
                     block->setBoxedable(boxedFlag);
+                    //block->setBlockId(blockid);
                     block->setResource(resource);
                     _configBlocks.append(block);
 
@@ -107,6 +111,7 @@ QVector<GeneralBlock*> JsonHandle::parserConfigJson(const char * fileDir,ConfigM
                     block->setPillarName(name);
                     block->setType(blockType);
                     block->setMatchType(matchType);
+                    //block->setBlockId(blockid);
                     block->setResource(resource);
                     _configBlocks.append(block);
                 }
@@ -115,6 +120,7 @@ QVector<GeneralBlock*> JsonHandle::parserConfigJson(const char * fileDir,ConfigM
                 {
                     int blockId = blocksInfo.take("blockId").toInt();
                     _configBlocks.last()->setBlockId(blockId);
+
                 }
 
 
@@ -220,16 +226,34 @@ void JsonHandle::parserRuleJson(const char * fileDir)
 
 int JsonHandle:: findBlockIds(QVector<GeneralBlock*> ruleBlocks,GeneralBlock* item)
 {
-    for(int i = 0; i < ruleBlocks.size(); i++)
+    if(item->getBlockId() != -1)
     {
-        if(*(ruleBlocks.at(i)) == *item)
+        return item->getBlockId();
+    }
+    else
+    {
+        for(int i = 0; i < ruleBlocks.size(); i++)
         {
-            int blockId = ruleBlocks.at(i)->getBlockId();
-            item->setBlockId(blockId);
-            return blockId;
+            if(*(ruleBlocks.at(i)) == *item)
+            {
+                int blockId = ruleBlocks.at(i)->getBlockId();
+                item->setBlockId(blockId);
+                return blockId;
+            }
+        }
+     }
+    return -3;
+}
+GeneralBlock* JsonHandle::findGroupBlock(int blockId)
+{
+    for(int i = 0 ; i < _configBlocks.size();i++)
+    {
+        if(_configBlocks.at(i)->getBlockId() == blockId)
+        {
+            return _configBlocks.at(i);
         }
     }
-    return -1;
+    return NULL;
 }
 void JsonHandle::createGridIds()
 {
@@ -272,12 +296,28 @@ QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
     QJsonArray blockIdArray;
     QJsonArray gridIdArray;
     QJsonArray ruleArray;
+    QJsonArray groupArray;
     QJsonArray jsonConstraints;
     //rule
     for(int i = 0; i < data->getBlocks().size(); i++)
     {
         ruleArray.insert(i,data->getBlocks().at(i)->exportJsonObject());
     }
+    //add group to rule
+    for(int i = 0; i < data->getGroupRules().size(); i++)
+    {
+        QVector<GroupItem*> items = data->getGroupRules().at(i)->getGroupItems();
+        for(int j = 0 ; j < items.size(); j++)
+        {
+            int blockId = items.at(j)->getBlockId();
+            GeneralBlock* block = findGroupBlock(blockId);
+            if(!block)
+            {
+                ruleArray.insert(ruleArray.size(),block->exportJsonObject());
+            }
+        }
+    }
+
     //blockId
     for(int i = 0; i < _blockIds.size(); i++)
     {
@@ -299,6 +339,18 @@ QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
     jsonLevel.insert("initialBlocks",blockIdArray);
     jsonLevel.insert("backgroundGrid",gridIdArray);
     jsonLevel.insert("targets",data->getTargetData()->exportJsonArray());
+    //add group
+    qDebug() <<"#####groupSize:"<<data->getGroupRules().size() << endl;
+    for(int i = 0 ; i < data->getGroupRules().size(); i++)
+    {
+        QJsonObject obj;
+        data->getGroupRules().at(i)->insertJsonObject(obj);
+        groupArray.insert(i,obj);
+    }
+    jsonLevel.insert("ruleBlockGroups",groupArray);
+    //random add rule
+
+
     jsonDocument.setObject(jsonLevel);
     return jsonDocument;
 

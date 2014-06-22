@@ -21,12 +21,12 @@ public:
     void groupItemsInit(QJsonArray array);
     void addGroupItem(GroupItem* item);
     void removeGroupitem(int i);
-
+    //QVector<GeneralBlock*> getGroupBlockRules();
 private:
     QString _name;
     int _groupId;
     QVector<GroupItem*> _groupItems;
-
+    //QVector<GeneralBlock*> _groupBlockRules;
 };
 
 

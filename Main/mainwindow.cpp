@@ -200,7 +200,7 @@ void MainWindow::createEditorWidget(CreateData* msg)
         _editorWidget->setBlockGroupRule(_groupDialog->getGroups());
         _editorWidget->setBlocksBoardImg(msg->getBackground().toUtf8().data());
         qDebug() << msg->getBackground();
-        delete msg;
+       // delete msg;
         _timer->start();
         _createDialog->close();
         //save data
@@ -231,7 +231,10 @@ void MainWindow::exportFileHandle()
 //                                                  _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
            _jsonData->setBlocks(_editorWidget->getBlocks());
            _jsonData->setConstraints(_editorWidget->getConstraints());
+           _jsonData->setGroupRules(_groupDialog->getGroups());
+           qDebug() << "####document front#####" <<endl;
            QJsonDocument document = JsonHandle::getInstance()->exportJson(_jsonData);
+           qDebug() << "####document last#####" <<endl;
            new ExportFile(document,this);
         }
     }

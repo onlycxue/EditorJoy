@@ -277,3 +277,10 @@ QVector<GroupData*> BlockGroupDialog::getGroups()
 {
     return _groups;
 }
+//QVector<GeneralBlock*> BlockGroupDialog::getGroupBlockRules()
+//{
+//    for(int i = 0 ; i < _groups.size(); i++)
+//    {
+//        _groupBlockRules += _groups.at(i)->getGroupBlockRules();
+//    }
+//}

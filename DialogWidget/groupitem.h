@@ -1,7 +1,7 @@
 #ifndef _GROUPITEM_H_
 #define _GROUPITEM_H_
 #include "../Block/generalBlock.h"
-#include "../JsonManage/jsonhandle.h"
+
 #include <QJsonObject>
 
 class GroupItem
@@ -18,15 +18,15 @@ public:
     float getProbability();
     int getBlockId();
     GeneralBlock* getBlockItem();
-    QJsonObject& exportJsonObject();
-    GeneralBlock* findBlockItem();
+    QJsonObject exportJsonObject();
+    //GeneralBlock* findBlockItem();
 private:
     int _max;
     int _min;
     float _probability;
     int _blockId;
     GeneralBlock* _blockItem;
-    QVector<GeneralBlock*> _blockRule;
+   // QVector<GeneralBlock*> _blockRule;
 };
 
 

@@ -53,6 +53,7 @@ public:
     void setBoxColorActionStatus(int type,bool flag);
     void setForzenStatus(int level);
     void setmultiplyStatus(int level);
+    void setRandomBlockStatus();
     void changeBlockResource(const char* file,BlockLabel* item);
     void exportBlocksMsg();
     void setBlocksStatus(BlockLabel* item);

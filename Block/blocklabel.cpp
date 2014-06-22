@@ -44,6 +44,7 @@ void BlockLabel::propertyInit()
       commonBlock->setMatchType(0);
       commonBlock->setMultipliper(0);
       commonBlock->setType(0);
+      commonBlock->setBlockId(-1);
 
 }
 void BlockLabel::setProperty(GeneralBlock* item)

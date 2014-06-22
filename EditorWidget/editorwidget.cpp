@@ -318,8 +318,6 @@ void EditorWidget::contextMenuEvent(QContextMenuEvent *event)
 
      _mainMenu = new QMenu(this);
     setActionStatus();
-    _groupsMenu =  _mainMenu->addMenu("addGroup");
-    _groupsMenu->addActions(_groupsActionGroup->actions());
 //    _mainMenu->addAction(_addGroup);
     _mainMenu->exec(event->globalPos());
 
@@ -742,7 +740,9 @@ void EditorWidget::setmultiplyStatus(int level)
 }
 void EditorWidget::setActionStatus()
 {
+
     QString name = getSelectBlock()->getPropertys()->getPillarName();
+    qDebug() << "#######" << name << "####"<< endl;
     if(name.compare("PRRuleCommonBlock") == 0)
     {
         CommonBlock* commonBlock = (CommonBlock*)getSelectBlock()->getPropertys();
@@ -766,6 +766,11 @@ void EditorWidget::setActionStatus()
         bool boxedFlag = petBlock->getBoxedable();
         qDebug() << "boxed flag is " << boxedFlag;
         setBoxColorActionStatus(matchType,boxedFlag);
+    }
+    else if(name.compare("PRRuleRanddomBlock") == 0)
+    {
+        setRandomBlockStatus();
+        qDebug() << "randdomBlock" << endl;
     }
 
 }
@@ -979,7 +984,10 @@ void EditorWidget::setBlockGroupRule(QVector<GroupData*> data)
     _blockGroups = data;
     for(int i = 0; i < data.size();i++)
     {
-        QAction* action = new QAction(data.at(i)->getName(),this);
+        QString id;
+        id.setNum(data.at(i)->getGroupId());
+        QAction* action = new QAction(id,this);
+        //action->setCheckable(true);
        // connect(action,SIGNAL(triggered()),this,SLOT(groupActions()));
         _groupsActionGroup->addAction(action);
     }
@@ -987,7 +995,23 @@ void EditorWidget::setBlockGroupRule(QVector<GroupData*> data)
 }
 void EditorWidget::groupActionSelect(QAction* action)
 {
-    qDebug() << action->text();
+//    for(int i = 0 ; i < _blockGroups.size(); i++)
+//    {
+//        if(_blockGroups.at(i)->getName() == action->text())
+//        {
+//            int id = _blockGroups.at(i)->getGroupId();
+//            getSelectBlock()->getPropertys()->setBlockId(id);
+//            break;
+//        }
+//    }
+     getSelectBlock()->getPropertys()->setBlockId(action->text().toInt());
+}
+
+void EditorWidget::setRandomBlockStatus()
+{
+    _groupsMenu =  _mainMenu->addMenu("addGroup");
+    _groupsMenu->addActions(_groupsActionGroup->actions());
+
 }
 EditorWidget::~EditorWidget()
 {

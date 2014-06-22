@@ -1,6 +1,6 @@
 #include "generalBlock.h"
 
-GeneralBlock::GeneralBlock()
+GeneralBlock::GeneralBlock():_blockId(-1)
 {
 
 }
@@ -22,7 +22,6 @@ BlockBase& GeneralBlock::operator= (BlockBase& other)
     _matchType = general._matchType;
     _resource = general._resource;
     return *this;
-
 }
 bool GeneralBlock::operator==(BlockBase& other)
 {

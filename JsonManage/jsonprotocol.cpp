@@ -40,3 +40,15 @@ QVector<DragLabel*> JsonProtocol::getConstraints()
 {
     return _constraints;
 }
+void JsonProtocol::setGroupRules(QVector<GroupData*> groups)
+{
+    _groupRules = groups;
+}
+QVector<GroupData*> JsonProtocol::getGroupRules()
+{
+    return _groupRules;
+}
+//void JsonProtocol::addGroupBlocks(QVector<GeneralBlock*> groupBlocks)
+//{
+//    _blocks +=groupBlocks;
+//}

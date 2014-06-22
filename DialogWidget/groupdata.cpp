@@ -31,6 +31,7 @@ int GroupData::getGroupId()
 void GroupData::addGroupItem(GroupItem* item)
 {
     _groupItems.append(item);
+   // _groupBlockRules.append(item->findBlockItem());
 }
 QVector<GroupItem*> GroupData::getGroupItems()
 {
@@ -60,4 +61,7 @@ void GroupData::removeGroupitem(int i)
 {
     _groupItems.removeAt(i);
 }
-
+//QVector<GeneralBlock*> GroupData::getGroupBlockRules()
+//{
+//    return _groupBlockRules;
+//}
