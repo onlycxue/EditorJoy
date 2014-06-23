@@ -6,13 +6,14 @@ EditorWidget::EditorWidget(JsonProtocol* data):_touchingLabel(NULL),_selectedNum
     _column = data->getCreateData()->getColumn();
     _dragLabels = data->getConstraints();
 
+
     editWidgetInit();
     blocksInit();
     this->setMouseTracking(true);
     actionInit();
 
     this->setContextMenuPolicy(Qt::DefaultContextMenu);
-    for(int i = 0 ; i < data->getBlocks().size();i++)
+    for(int i = 0 ; i < _row*_column;i++)
     {
         _blocks.at(i)->setProperty(data->getBlocks().at(i));
         setBlocksStatus(_blocks.at(i));
@@ -26,6 +27,10 @@ EditorWidget::EditorWidget(JsonProtocol* data):_touchingLabel(NULL),_selectedNum
 
     }
 
+    char imageDir[200];
+    sprintf(imageDir,"%s/%s.png",BackGroundBasePath,data->getCreateData()->getBackground().toUtf8().data());
+    qDebug() <<"hi charly image dir is "<<imageDir;
+    setBlocksBoardImg(imageDir);
 }
 EditorWidget::EditorWidget(int row,int column):
                       _row(row),_column(column),_selectedNum(-1),_touchingLabel(NULL)
@@ -935,6 +940,7 @@ int EditorWidget::getColumn()
 }
 QVector<GeneralBlock*> EditorWidget::getBlocks()
 {
+    _generalBlocks.clear();
     for(int i = 0 ; i < _blocks.size();i++)
     {
         _generalBlocks.append(_blocks.at(i)->getPropertys());

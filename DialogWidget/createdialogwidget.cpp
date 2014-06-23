@@ -49,7 +49,7 @@ void CreateFile::init()
     _imageView->setMaximumSize(64,96);
     hImageLayout->addSpacing(1);
     hImageLayout->addWidget(_imageView);
-    _msg->setBackground(":/images/Backgrounds/park1.png");
+    _msg->setBackground("park1.png");
 
     QHBoxLayout* hbuttonLayout = new QHBoxLayout;
     _entryButton = new QPushButton(this);
@@ -99,4 +99,8 @@ void CreateFile::changeImage(QString name)
     _imageView->setScaledContents(true);
     _imageView->setPixmap(pixmap);
     _msg->setBackground(imagePath);
+}
+CreateData* CreateFile::getCreateData()
+{
+    return _msg;
 }

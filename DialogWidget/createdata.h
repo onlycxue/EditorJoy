@@ -17,6 +17,7 @@ public:
     int getColumn();
     QString getBackground();
     void insertObject(QJsonObject& object);
+
 private:
     int _row;
     int _column;

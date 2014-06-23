@@ -246,10 +246,12 @@ int JsonHandle:: findBlockIds(QVector<GeneralBlock*> ruleBlocks,GeneralBlock* it
 }
 GeneralBlock* JsonHandle::findGroupBlock(int blockId)
 {
+
     for(int i = 0 ; i < _configBlocks.size();i++)
     {
         if(_configBlocks.at(i)->getBlockId() == blockId)
         {
+
             return _configBlocks.at(i);
         }
     }
@@ -273,6 +275,7 @@ QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
 {
 
     _blockIds.clear();
+
     parserConfigJson(RuleConfigPath,RuleFile);
     for(int i = 0 ; i < data->getBlocks().size(); i++)
     {
@@ -280,6 +283,7 @@ QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
         _blockIds.append(findBlockIds(_configBlocks,data->getBlocks().at(i)));
     }
     //createGridIds
+    _gridIds.clear();
     for(int i = 0 ; i < _blockIds.size(); i++)
     {
         if(_blockIds.at(i) == 2001)
@@ -307,15 +311,23 @@ QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
     for(int i = 0; i < data->getGroupRules().size(); i++)
     {
         QVector<GroupItem*> items = data->getGroupRules().at(i)->getGroupItems();
+        static int z;
         for(int j = 0 ; j < items.size(); j++)
         {
             int blockId = items.at(j)->getBlockId();
+
             GeneralBlock* block = findGroupBlock(blockId);
-            if(!block)
+
+            if(block)
             {
-                ruleArray.insert(ruleArray.size(),block->exportJsonObject());
+
+
+                qDebug() << "charly ! z is " <<z;
+                ruleArray.insert(data->getBlocks().size()+z,block->exportJsonObject());
+                z++;
             }
         }
+        z = 0;
     }
 
     //blockId

@@ -16,6 +16,7 @@ void JsonProtocol::setTarget(TargetData* target)
 
 void JsonProtocol::setBlocks(QVector<GeneralBlock*> blocks)
 {
+    //_blocks.clear();
     _blocks = blocks;
 }
 CreateData* JsonProtocol::getCreateData()
@@ -33,6 +34,7 @@ QVector<GeneralBlock*> JsonProtocol::getBlocks()
 
 void JsonProtocol::setConstraints(QVector<DragLabel*> constraints)
 {
+   //_constraints.clear();
    _constraints = constraints;
 }
 

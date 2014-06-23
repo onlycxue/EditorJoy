@@ -17,6 +17,7 @@ public:
     TargetDialog(QWidget* parent = 0);
     void init();
     void setCurrentData(TargetData* data);
+    TargetData* getTatgetData();
 signals:
     void Clicked(TargetData*);
 public slots:

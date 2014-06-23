@@ -13,6 +13,7 @@ void TargetDialog::init()
     _petSumLabel = new QLabel(this);
     _petSumLabel->setText("宠物数量:");
     _petSumLineEdit = new QLineEdit(this);
+    _petSumLineEdit->setText("0");
     petLineLayout->addWidget(_petSumLabel);
     petLineLayout->addWidget(_petSumLineEdit);
 
@@ -20,6 +21,7 @@ void TargetDialog::init()
     _star1Label = new QLabel(this);
     _star1Label->setText("一星分数:");
     _star1LineEdit = new QLineEdit(this);
+    _star1LineEdit->setText("1000");
     star1LineLayout->addWidget(_star1Label);
     star1LineLayout->addWidget(_star1LineEdit);
 
@@ -27,6 +29,7 @@ void TargetDialog::init()
     _star2Label = new QLabel(this);
     _star2Label->setText("二星分数:");
     _star2LineEdit = new QLineEdit(this);
+    _star2LineEdit->setText("2000");
     star2LineLayout->addWidget(_star2Label);
     star2LineLayout->addWidget(_star2LineEdit);
 
@@ -34,6 +37,7 @@ void TargetDialog::init()
     _star3Label = new QLabel(this);
     _star3Label->setText("三星分数:");
     _star3LineEdit = new QLineEdit(this);
+    _star3LineEdit->setText("3000");
     star3LineLayout->addWidget(_star3Label);
     star3LineLayout->addWidget(_star3LineEdit);
 
@@ -81,4 +85,13 @@ void TargetDialog::ClickedHandle()
     _data->setStar3Score(_star3LineEdit->text().toInt());
     this->close();
     emit Clicked(_data);
+}
+
+TargetData* TargetDialog::getTatgetData()
+{
+    _data->setPetNum(_petSumLineEdit->text().toInt());
+    _data->setStar1Score(_star1LineEdit->text().toInt());
+    _data->setStar2Score(_star2LineEdit->text().toInt());
+    _data->setStar3Score(_star3LineEdit->text().toInt());
+    return _data;
 }

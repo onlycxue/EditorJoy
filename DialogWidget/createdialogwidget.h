@@ -19,6 +19,7 @@ class CreateFile:public QDialog
 public:
      CreateFile(QWidget* parent = 0);
      void init();
+     CreateData* getCreateData();
 public slots:
      void entryHandle();
      void changeImage(QString name);

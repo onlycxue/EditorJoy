@@ -198,7 +198,9 @@ void MainWindow::createEditorWidget(CreateData* msg)
         connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
         connect(_groupDialog,SIGNAL(groupsSender(QVector<GroupData*>)),_editorWidget,SLOT(getGroupsFromDialog(QVector<GroupData*>)));
         _editorWidget->setBlockGroupRule(_groupDialog->getGroups());
-        _editorWidget->setBlocksBoardImg(msg->getBackground().toUtf8().data());
+        char imageDir[200];
+        sprintf(imageDir,"%s/%s",BackGroundBasePath,msg->getBackground().toUtf8().data());
+        _editorWidget->setBlocksBoardImg(imageDir);
         qDebug() << msg->getBackground();
        // delete msg;
         _timer->start();
@@ -230,6 +232,7 @@ void MainWindow::exportFileHandle()
 //          QJsonDocument document = JsonHandle::getInstance()->exportJson(_editorWidget->getBlocks(),_editorWidget->getConstraints(),
 //                                                  _editorWidget->getRow(),_editorWidget->getColumn(),_levelTargetData,_levelBackground);
            _jsonData->setBlocks(_editorWidget->getBlocks());
+           _jsonData->setTarget(_targetDialog->getTatgetData());
            _jsonData->setConstraints(_editorWidget->getConstraints());
            _jsonData->setGroupRules(_groupDialog->getGroups());
            qDebug() << "####document front#####" <<endl;
@@ -252,11 +255,13 @@ void MainWindow::importFileHandle()
                                                     "./Export",
                                                     tr("Text files (*.json)"));
     _jsonData=JsonHandle::getInstance()->importJson(fileName.toUtf8().data());
+    qDebug() << "import start!"<<endl;
     _editorWidget = new EditorWidget(_jsonData);
     _editorArea->setWidget(_editorWidget);
-    connect(_blocksWidget,SIGNAL(Clicked(BlockItem*)),_editorWidget,SLOT(msgHandler(BlockItem*)));
+    connect(_blocksWidget,SIGNAL(Clicked(GeneralBlock*)),_editorWidget,SLOT(msgHandler(GeneralBlock*)));
     connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
-
+    connect(_groupDialog,SIGNAL(groupsSender(QVector<GroupData*>)),_editorWidget,SLOT(getGroupsFromDialog(QVector<GroupData*>)));
+    qDebug() << "import endl!"<<endl;
     _timer->start();
 
 
