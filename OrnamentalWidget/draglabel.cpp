@@ -83,6 +83,6 @@ QJsonObject DragLabel::exportJsonObject()
     object.insert("iOffsetToTop",600);
     object.insert("resource",_imageName);
     object.insert("xOffset",x());
-    object.insert("yOffset",y());
+    object.insert("yOffset",1200 - y() - 63);
     return object;
 }

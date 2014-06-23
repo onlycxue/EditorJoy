@@ -16,7 +16,7 @@ BlockLabel::BlockLabel(QWidget *parent ):
 {
     this->setMinimumSize(70,70);
     this->setMaximumSize(70,70);
-    setStyleSheet("border-width: 1px; border-style: solid;border-color: rgb(255, 170, 0);");
+    setStyleSheet("border-width: 1px; border-style: solid;border-color: transparent;");
     this->setWindowFlags(Qt::WindowStaysOnTopHint);
     propertyInit();
     _secondImgLabel = new QLabel(this);
@@ -68,7 +68,7 @@ void BlockLabel::setSelect(bool flag)
     else
     {
         qDebug() << "clear"<<endl;
-        setStyleSheet("border-width: 1px; border-style: solid;border-color: rgb(255, 170, 0);");
+        setStyleSheet("border-width: 1px; border-style: solid;border-color: transparent;");
     }
 
 }

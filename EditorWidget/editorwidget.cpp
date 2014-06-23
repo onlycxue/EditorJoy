@@ -18,6 +18,7 @@ EditorWidget::EditorWidget(JsonProtocol* data):_touchingLabel(NULL),_selectedNum
         _blocks.at(i)->setProperty(data->getBlocks().at(i));
         setBlocksStatus(_blocks.at(i));
     }
+    qDebug() << _dragLabels.size()<< "&*&*&*&*&*";
     for(int i = 0 ; i < _dragLabels.size(); i++)
     {
         _dragLabels.at(i)->setParent(this);
@@ -46,43 +47,48 @@ EditorWidget::EditorWidget(int row,int column):
 
 void EditorWidget::editWidgetInit()
 {
+    this->setMinimumSize(640,1200);
     _blocksBoard = new QWidget(this);
+    _blocksBoard->show();
+    _blocksBoard->setGeometry(0,0,BLOCK_WIDTH*(_column+0.2),BLOCK_HEIGHT*(_row+0.2));
     _blocksBoard->setAttribute(Qt::WA_TransparentForMouseEvents);
-    _gridLayout = new QGridLayout(_blocksBoard);
+    _blocksBoard->setWindowFlags(Qt::WindowStaysOnTopHint);
+    _blocksBoard->raise();
+   // _gridLayout = new QGridLayout(_blocksBoard);
     //设置编辑区的背景颜色
     QPalette palette;
-    palette.setColor(QPalette::Background, QColor(192,253,123));
+    palette.setColor(QPalette::Background, QColor(0,253,123));
     setPalette(palette);
-    _blocksBoard->resize(BLOCK_WIDTH*(_column+0.2),BLOCK_HEIGHT*(_row+0.2));
+    _blocksBoard->setMinimumSize(BLOCK_WIDTH*(_column+0.2),BLOCK_HEIGHT*(_row+0.2));
    // this->resize(640,1640);    //9行、
     //this->resize(640,1480);      // 8 hang
     //this->resize(640,1270);  //7 hang
 //    this->resize(640,1100);    //6hang
-    if(_row == 9)
-    {
-        this->resize(640,1640);
-    }
-    else if(_row == 8)
-    {
-        this->resize(640,1480);
-    }
-    else if(_row == 7)
-    {
-        this->resize(640,1270);
-    }
-    else if(_row == 6)
-    {
-        this->resize(640,1100);
-    }
-    else
-    {
-        this->resize(640,1280);
-    }
+//    if(_row == 9)
+//    {
+//        this->resize(640,1640);
+//    }
+//    else if(_row == 8)
+//    {
+//        this->resize(640,1480);
+//    }
+//    else if(_row == 7)
+//    {
+//        this->resize(640,1270);
+//    }
+//    else if(_row == 6)
+//    {
+//        this->resize(640,1100);
+//    }
+//    else
+//    {
+//        this->resize(640,1280);
+//    }
 
     int x =(width()-BLOCK_WIDTH*(_column+0.2))/2;
     int y =(height() - BLOCK_HEIGHT*(_row+0.2))/2;
 
-    int blockOffset =0;
+//    int blockOffset =0;
 //    if (_column==5) {
 //        blockOffset=-70;
 //    }else if (_column==6){
@@ -95,46 +101,46 @@ void EditorWidget::editWidgetInit()
 //        blockOffset=360;
 //    }
     //qDebug() << "############X:"<< x << "y:" << y <<"###############" <<this->size()<<endl;
-    _blocksBoard->setGeometry(x,y+blockOffset,_blocksBoard->width(),_blocksBoard->height());
+    //_blocksBoard->setGeometry(x,y+blockOffset,_blocksBoard->width(),_blocksBoard->height());
     //qDebug() << "############X:"<< x << "y:" << y <<"###############" <<_blocksBoard->size()<<endl;
 }
 void EditorWidget::blocksInit()
 {
+    float blockOffset = 0;
+
+    if (_column==5) {
+        blockOffset=143;
+    }else if (_column==6){
+        blockOffset=108;
+    }else if (_column==7){
+        blockOffset=73 ;
+    }else if (_column==8){
+        blockOffset=38 ;
+    }else {
+        blockOffset=3;
+    }
+
+    int yOffset = 146;
+    int scrollHeight = 1200;
+    int blocksHeight = 63*(_row-1)+70;
+    int offsetHeight = scrollHeight - blocksHeight;
 
     for(int i = 0 ; i < _row ; i++)
     {
         for(int j = 0; j < _column ; j++)
         {
             //qDebug() << "position is " << _row << _column << endl;
-            BlockLabel* block = new BlockLabel(_blocksBoard);
+            BlockLabel* block = new BlockLabel(this);
             //block->installEventFilter(this);
             block->setAttribute(Qt::WA_TransparentForMouseEvents);
-//            QString rowStr;
-//            QString columnStr;
-//            rowStr.setNum(i);
-//            columnStr.setNum(j);
-////            //block->setText("( "+rowStr+","+ columnStr + " )");
-//            block->setText("( "+columnStr+","+ rowStr + " )");
-//            block->setAlignment(Qt::AlignCenter);
-            //添加到容器
-//            float blockOffset = 0;
-
-
-
-//            int yOffset = 146;
-
-
-////            int scrollHeight = MainWindow::getInstance()->widgetBlocksHeight();
-//    //        block.frame=CGRectMake(80+j*70, 560 - i*63, 70, 70);
-//            int blocksHeight = 63*(i-1)+70;
-//            int offsetHeight = 1200 - blocksHeight;
-//            block->setGeometry(QRect(blockOffset + 70*j,  offsetHeight+63*i - yOffset,70,70));
-////            block->reloadWithType();
-
+            block->setGeometry(QRect(blockOffset + 70*j ,  offsetHeight+63*i - yOffset,BLOCK_WIDTH,BLOCK_HEIGHT));
+            qDebug() <<"@#block Location is " << block->geometry();
             _blocks.append(block);
-            _gridLayout->addWidget(block,i,j);
+            //_gridLayout->addWidget(block,i,j);
         }
     }
+    _blocksArea = new QRect(blockOffset,offsetHeight-yOffset,_column*BLOCK_WIDTH,blocksHeight);
+
 }
 void EditorWidget::setRow(int num)
 {
@@ -169,27 +175,21 @@ BlockLabel* EditorWidget::getSelectBlock()
 }
 void EditorWidget::mousePressEvent(QMouseEvent *event)
 {
-    if(event->x() >= _blocksBoard->x()+_blocksBoard->width() ||
-          event->y() >= _blocksBoard->y()+_blocksBoard->height() ||
-            event->y() <= _blocksBoard->y() || event->x() <= _blocksBoard->x())
-    {
-        return;
-    }
-    int num = (event->x()-_blocksBoard->x())/BLOCK_WIDTH + (event->y()-_blocksBoard->y())/BLOCK_HEIGHT*_column;
-    //qDebug() << (event->x()-_blocksBoard->x())/BLOCK_WIDTH<< "###" << (event->y()-_blocksBoard->y())/BLOCK_HEIGHT <<endl;
-    qDebug() << "Select Num:" << num;
-    qDebug() << "_blocks Size:" << _blocks.size();
-    if(_selectedNum != num && num < _column*_row)
-    {
 
-        if(_selectedNum != -1)
-        {
-           getSelectBlock()->setSelect(false);
-        }
-        _selectedNum = num;
-        getSelectBlock()->setSelect(true);
-    }
+     if(_blocksArea->contains(event->x(),event->y()))
+     {
+         int num = (event->x()- _blocksArea->x())/BLOCK_WIDTH + (event->y()-_blocksArea->y())/63*_column;
+         if(_selectedNum != num && num < _column*_row)
+         {
 
+             if(_selectedNum != -1)
+             {
+                getSelectBlock()->setSelect(false);
+             }
+             _selectedNum = num;
+             getSelectBlock()->setSelect(true);
+         }
+     }
 
 }
 
@@ -970,10 +970,11 @@ void EditorWidget::touchingClean()
 void EditorWidget::setBlocksBoardImg(QString image)
 {
 
-    this->setAutoFillBackground(true);
+    //this->setAutoFillBackground(true);
     QPalette palette;
     QPixmap img(image);
-    img.scaled(640,960);
+    //img.scaled(640,1200);
+    img.scaled(this->size(),Qt::IgnoreAspectRatio,Qt::SmoothTransformation);
     palette.setBrush(QPalette::Background, QBrush(img));
     this->setPalette(palette);
 

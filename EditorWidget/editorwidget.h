@@ -14,6 +14,7 @@
 #include "../JsonManage/jsonhandle.h"
 #include "../JsonManage/jsonprotocol.h"
 #include "../DialogWidget/groupdata.h"
+#include <QRect>
 
 #define BLOCK_WIDTH 70
 #define BLOCK_HEIGHT 70
@@ -131,6 +132,7 @@ private:
 
     //blockGroup
     QActionGroup* _groupsActionGroup;
+    QRect *_blocksArea;
 
 };
 

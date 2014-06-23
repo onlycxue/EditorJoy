@@ -350,6 +350,7 @@ QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
     jsonLevel.insert("rules",ruleArray);
     jsonLevel.insert("initialBlocks",blockIdArray);
     jsonLevel.insert("backgroundGrid",gridIdArray);
+    jsonLevel.insert("constraintSprites",jsonConstraints);
     jsonLevel.insert("targets",data->getTargetData()->exportJsonArray());
     //add group
     qDebug() <<"#####groupSize:"<<data->getGroupRules().size() << endl;
@@ -369,6 +370,7 @@ QJsonDocument JsonHandle::exportJson(JsonProtocol *data)
 }
 JsonProtocol* JsonHandle::importJson(const char* fileDir)
 {
+
     JsonProtocol* importData = new JsonProtocol;
 
     importData->setBlocks(parserConfigJson(fileDir,RuleFile));
@@ -624,7 +626,7 @@ QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir)
                 int yOffset = constraintInfo.take("yOffset").toInt();
                 int offsetToTop = constraintInfo.take("iOffsetToTop").toInt();
                 char chImageDir[200];
-                sprintf(chImageDir,"%s.png",ConstraintsBasePath,resName.toUtf8().data());
+                sprintf(chImageDir,"%s/%s.png",ConstraintsBasePath,resName.toUtf8().data());
                 qDebug()<< "chImageDir is " << chImageDir << endl;
                 QFile file(chImageDir);
                 if (file.exists())
@@ -634,7 +636,7 @@ QVector<DragLabel*> JsonHandle::parserJsonFileForconstraint(const char* fileDir)
                     label->setImage(resName);
                     QPixmap pixMap(chImageDir);
                     // label->setGeometry(xOffset,_widgetBlocksHeight - yOffset - pixMap.height(),pixMap.width(),pixMap.height());
-                    label->setGeometry(xOffset,yOffset,pixMap.width(),pixMap.height());
+                    label->setGeometry(xOffset,1200 - 63 - yOffset,pixMap.width(),pixMap.height());
                     _constraints.append(label);
 
                 }
