@@ -76,12 +76,12 @@ void MainWindow::menubarInit()
     setmenu->addAction(_levelTarget);
 
     connect(_levelTarget,SIGNAL(triggered()),_targetDialog,SLOT(show()));
-    _leveBackGround = new QAction(QIcon(levelBackgroundIcon),"关卡背景",this);
+    _leveBackGround = new QAction(QIcon(backgroundIcon),"关卡背景",this);
     connect(_leveBackGround,SIGNAL(triggered()),_backgroudDialog,SLOT(show()));
     setmenu->addAction(_leveBackGround);
-    QAction* groupAction = new QAction("添加组",this);
-    setmenu->addAction(groupAction);
-    connect(groupAction,SIGNAL(triggered()),_groupDialog,SLOT(show()));
+    _groupAction = new QAction(QIcon(groupIcon),"添加组",this);
+    setmenu->addAction(_groupAction);
+    connect(_groupAction,SIGNAL(triggered()),_groupDialog,SLOT(show()));
 
     QMenu* helpmenu = new QMenu(_menubar);
     helpmenu->setObjectName(QStringLiteral("menu"));
@@ -97,30 +97,46 @@ void MainWindow::menubarInit()
 }
 void MainWindow::toolbarInit()
 {
-    _toolbar = new QToolBar(this);
-    _toolbar->setObjectName(QStringLiteral("mainToolBar"));
-    this->addToolBar(Qt::TopToolBarArea, _toolbar);
+    _fileToolbar = new QToolBar(this);
+    _fileToolbar->setObjectName(QStringLiteral("mainToolBar"));
+    this->addToolBar(Qt::TopToolBarArea, _fileToolbar);
 
-    QAction *newFile = new QAction(QIcon(newFileIcon),
-                                        "&New",this);
-    connect(newFile,SIGNAL(triggered()),_createDialog,SLOT(show()));
-    newFile->setStatusTip("新建文件");
-    _toolbar->addAction(newFile);
+    _fileToolbar->addAction(_createFile);
+    _fileToolbar->addAction(_exportFile);
+    _fileToolbar->addAction(_importFile);
+    _fileToolbar->addAction(_editorClose);
 
-    QAction *exportFile = new QAction(QIcon(exportfileIcon),
-                                        "&export",this);
-    _toolbar->addAction(exportFile);
-    connect(exportFile,SIGNAL(triggered()),this,SLOT(exportFileHandle()));
+//    QAction *newFile = new QAction(QIcon(newFileIcon),
+//                                        "&New",this);
+//    connect(newFile,SIGNAL(triggered()),_createDialog,SLOT(show()));
+//    newFile->setStatusTip("新建文件");
+//    _fileToolbar->addAction(newFile);
 
-    QAction *importFile = new QAction(QIcon(importFileIcon),
-                                        "&import",this);
-    _toolbar->addAction(importFile);
-    connect(importFile,SIGNAL(triggered()),this,SLOT(importFileHandle()));
+//    QAction *exportFile = new QAction(QIcon(exportfileIcon),
+//                                        "&export",this);
+//    _fileToolbar->addAction(exportFile);
+//    connect(exportFile,SIGNAL(triggered()),this,SLOT(exportFileHandle()));
 
-    QAction *exitFile= new QAction(QIcon(exitFileIcon),
-                                        "&exit",this);
-    _toolbar->addAction(exitFile);
-    connect(exitFile,SIGNAL(triggered()),this,SLOT(editorClose()));
+//    QAction *importFile = new QAction(QIcon(importFileIcon),
+//                                        "&import",this);
+//    _fileToolbar->addAction(importFile);
+//    connect(importFile,SIGNAL(triggered()),this,SLOT(importFileHandle()));
+
+//    QAction *exitFile= new QAction(QIcon(exitFileIcon),
+//                                        "&exit",this);
+//    _fileToolbar->addAction(exitFile);
+//    connect(exitFile,SIGNAL(triggered()),this,SLOT(editorClose()));
+
+    _setToolbar = new QToolBar(this);
+    _setToolbar->setObjectName(QStringLiteral("setToolBar"));
+    this->addToolBar(Qt::TopToolBarArea, _setToolbar);
+
+    _setToolbar->addAction(_leveBackGround);
+    _setToolbar->addAction(_levelTarget);
+    _setToolbar->addAction(_groupAction);
+
+//    QAction *targetSet = new QAction(QIcon(levelTargetIcon),"关卡目标",this);
+//    connect(targetSet,SIGNAL(triggered()),_targetDialog,SLOT(show()));
 }
 void MainWindow::editorWidgetInit()
 {
@@ -254,15 +270,19 @@ void MainWindow::importFileHandle()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
                                                     "./Export",
                                                     tr("Text files (*.json)"));
-    _jsonData=JsonHandle::getInstance()->importJson(fileName.toUtf8().data());
-    qDebug() << "import start!"<<endl;
-    _editorWidget = new EditorWidget(_jsonData);
-    _editorArea->setWidget(_editorWidget);
-    connect(_blocksWidget,SIGNAL(Clicked(GeneralBlock*)),_editorWidget,SLOT(msgHandler(GeneralBlock*)));
-    connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
-    connect(_groupDialog,SIGNAL(groupsSender(QVector<GroupData*>)),_editorWidget,SLOT(getGroupsFromDialog(QVector<GroupData*>)));
-    qDebug() << "import endl!"<<endl;
-    _timer->start();
+    QFile file(fileName);
+    if(file.exists())
+    {
+        _jsonData=JsonHandle::getInstance()->importJson(fileName.toUtf8().data());
+        qDebug() << "import start!"<<endl;
+        _editorWidget = new EditorWidget(_jsonData);
+        _editorArea->setWidget(_editorWidget);
+        connect(_blocksWidget,SIGNAL(Clicked(GeneralBlock*)),_editorWidget,SLOT(msgHandler(GeneralBlock*)));
+        connect(_ornamentalWidget,SIGNAL(doubleClicked(QListWidgetItem*)),_editorWidget,SLOT(addDragLabel(QListWidgetItem*)));
+        connect(_groupDialog,SIGNAL(groupsSender(QVector<GroupData*>)),_editorWidget,SLOT(getGroupsFromDialog(QVector<GroupData*>)));
+        qDebug() << "import endl!"<<endl;
+        _timer->start();
+    }
 
 
 }

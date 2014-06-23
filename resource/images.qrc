@@ -243,5 +243,7 @@
         <file>images/icon/newfile.png</file>
         <file>images/icon/set.png</file>
         <file>images/icon/target.png</file>
+        <file>images/icon/backgroud.png</file>
+        <file>images/icon/group.png</file>
     </qresource>
 </RCC>

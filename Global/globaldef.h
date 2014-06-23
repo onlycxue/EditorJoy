@@ -40,7 +40,8 @@ static const char* exportfileIcon = ":images/icon/exportfile.png";
 static const char* exitFileIcon = ":images/icon/exit.png";
 static const char* levelTargetIcon = ":images/icon/target.png";
 static const char* levelBackgroundIcon = ":images/icon/set.png";
-
+static const char* groupIcon = ":images/icon/group.png";
+static const char* backgroundIcon = ":images/icon/backgroud.png";
 //window icon
 static const char* windowIcon = ":images/PopUps/animal_cat.png";
 

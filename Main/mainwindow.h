@@ -54,7 +54,8 @@ public slots:
      //void backgroudDialogshow();
 private:
 
-    QToolBar *_toolbar;
+    QToolBar *_fileToolbar;
+    QToolBar *_setToolbar;
     QVector<QMenu*> _menus;
     QMenuBar *_menubar;
     QVector<QAction*> _toolbarActions;
@@ -74,6 +75,7 @@ private:
     QAction *_editorClose;
     QAction *_levelTarget;
     QAction *_leveBackGround;
+    QAction* _groupAction;
     QAction *_statement;
     QTimer* _timer;
 
